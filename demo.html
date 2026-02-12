@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Adaptive Routing System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+canvas { background:#111827; border-radius:12px; }
+</style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen p-6">
+
+<h1 class="text-3xl font-bold text-center mb-6">
+ Real-Time Traffic Simulation & Time Calculation
+</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+<!-- LEFT PANEL -->
+<div class="bg-gray-800 p-5 rounded-xl shadow-lg space-y-4">
+
+<h2 class="text-xl font-semibold">Generate Graph</h2>
+<input id="nodeCount" type="number" placeholder="Number of Nodes (5-15)"
+class="w-full p-2 rounded bg-gray-700">
+
+<button onclick="generateGraph()"
+class="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded">
+Generate Graph
+</button>
+
+<hr class="border-gray-600">
+
+<h2 class="text-xl font-semibold">Simulate Traffic</h2>
+
+<label>Global Car Density Multiplier</label>
+<input type="range" min="0.5" max="3" step="0.1" value="1"
+id="trafficSlider" class="w-full">
+
+<span id="trafficValue">1</span>
+
+<button onclick="updateTraffic()"
+class="w-full bg-green-600 hover:bg-green-700 p-2 rounded mt-2">
+Update Traffic
+</button>
+
+<hr class="border-gray-600">
+
+<h2 class="text-xl font-semibold">Find Travel Time</h2>
+
+<select id="sourceNode"
+class="w-full p-2 rounded bg-gray-700"></select>
+
+<select id="destNode"
+class="w-full p-2 rounded bg-gray-700"></select>
+
+<button onclick="calculateFastestPath()"
+class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded">
+Calculate Fastest Time
+</button>
+
+<div id="result" class="mt-4 text-lg"></div>
+
+</div>
+
+<!-- GRAPH -->
+<div class="md:col-span-2 bg-gray-800 p-5 rounded-xl shadow-lg">
+<canvas id="graphCanvas" width="850" height="500"></canvas>
+</div>
+
+</div>
+
+<script>
+
+let nodes = {};
+let edges = {};
+let globalTrafficMultiplier = 1;
+const BASE_SPEED = 60; // km/h
+const ROAD_CAPACITY = 100;
+
+const canvas = document.getElementById("graphCanvas");
+const ctx = canvas.getContext("2d");
+
+// ---------------- GENERATE GRAPH ----------------
+
+function generateGraph(){
+
+let count = parseInt(document.getElementById("nodeCount").value);
+if(isNaN(count) || count < 2 || count > 20){
+alert("Enter nodes between 2 and 20");
+return;
+}
+
+nodes = {};
+edges = {};
+
+let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+for(let i=0;i<count;i++){
+let name = letters[i];
+nodes[name] = {
+x: Math.random()*750 + 50,
+y: Math.random()*400 + 50
+};
+edges[name] = {};
+}
+
+let nodeKeys = Object.keys(nodes);
+
+for(let i=0;i<nodeKeys.length;i++){
+for(let j=i+1;j<nodeKeys.length;j++){
+
+if(Math.random() < 0.4){
+
+let distance = Math.floor(Math.random()*20)+5;
+let cars = Math.floor(Math.random()*80)+10;
+
+edges[nodeKeys[i]][nodeKeys[j]] = {distance, cars};
+edges[nodeKeys[j]][nodeKeys[i]] = {distance, cars};
+}
+}
+}
+
+updateDropdowns();
+drawGraph();
+}
+
+// ---------------- TRAFFIC UPDATE ----------------
+
+function updateTraffic(){
+
+globalTrafficMultiplier =
+parseFloat(document.getElementById("trafficSlider").value);
+
+document.getElementById("trafficValue").innerText =
+globalTrafficMultiplier;
+
+drawGraph();
+}
+
+// ---------------- DRAW GRAPH ----------------
+
+function drawGraph(highlightPath=[]){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+for(let from in edges){
+for(let to in edges[from]){
+
+if(from < to){
+
+let edge = edges[from][to];
+let time = calculateEdgeTime(edge.distance, edge.cars);
+
+ctx.strokeStyle="gray";
+ctx.beginPath();
+ctx.moveTo(nodes[from].x,nodes[from].y);
+ctx.lineTo(nodes[to].x,nodes[to].y);
+ctx.stroke();
+
+// show data
+let midX=(nodes[from].x+nodes[to].x)/2;
+let midY=(nodes[from].y+nodes[to].y)/2;
+
+ctx.fillStyle="yellow";
+ctx.fillText(
+`D:${edge.distance}km C:${edge.cars} T:${time.toFixed(2)}h`,
+midX,midY
+);
+}
+}
+}
+
+// highlight path
+if(highlightPath.length>0){
+ctx.strokeStyle="red";
+ctx.lineWidth=4;
+
+for(let i=0;i<highlightPath.length-1;i++){
+ctx.beginPath();
+ctx.moveTo(nodes[highlightPath[i]].x,nodes[highlightPath[i]].y);
+ctx.lineTo(nodes[highlightPath[i+1]].x,nodes[highlightPath[i+1]].y);
+ctx.stroke();
+}
+ctx.lineWidth=1;
+}
+
+// draw nodes
+for(let n in nodes){
+ctx.fillStyle="white";
+ctx.beginPath();
+ctx.arc(nodes[n].x,nodes[n].y,15,0,Math.PI*2);
+ctx.fill();
+ctx.fillStyle="black";
+ctx.fillText(n,nodes[n].x-4,nodes[n].y+4);
+}
+}
+
+// ---------------- TIME CALCULATION ----------------
+
+function calculateEdgeTime(distance, cars){
+
+let trafficFactor =
+1 + ((cars * globalTrafficMultiplier) / ROAD_CAPACITY);
+
+return (distance / BASE_SPEED) * trafficFactor;
+}
+
+// ---------------- DIJKSTRA USING TIME ----------------
+
+function calculateFastestPath(){
+
+let start=document.getElementById("sourceNode").value;
+let end=document.getElementById("destNode").value;
+
+let times={}, prev={}, pq=[];
+
+for(let node in nodes){
+times[node]=Infinity;
+prev[node]=null;
+pq.push(node);
+}
+
+times[start]=0;
+
+while(pq.length>0){
+
+pq.sort((a,b)=>times[a]-times[b]);
+let current=pq.shift();
+
+if(current===end) break;
+
+for(let neighbor in edges[current]){
+
+let edge = edges[current][neighbor];
+let edgeTime =
+calculateEdgeTime(edge.distance, edge.cars);
+
+let alt = times[current] + edgeTime;
+
+if(alt < times[neighbor]){
+times[neighbor]=alt;
+prev[neighbor]=current;
+}
+}
+}
+
+// reconstruct path
+let path=[];
+let u=end;
+
+while(u){
+path.unshift(u);
+u=prev[u];
+}
+
+drawGraph(path);
+
+document.getElementById("result").innerHTML=
+`Fastest Travel Time: <b>${times[end].toFixed(2)} hours</b>
+<br>Path: ${path.join(" → ")}`;
+}
+
+// ---------------- DROPDOWN ----------------
+
+function updateDropdowns(){
+let selects=["sourceNode","destNode"];
+selects.forEach(id=>{
+let sel=document.getElementById(id);
+sel.innerHTML="";
+for(let n in nodes){
+let option=document.createElement("option");
+option.value=n;
+option.text=n;
+sel.appendChild(option);
+}
+});
+}
+
+// slider live update
+document.getElementById("trafficSlider")
+.addEventListener("input",function(){
+document.getElementById("trafficValue").innerText=this.value;
+});
+
+</script>
+
+</body>
+</html>
