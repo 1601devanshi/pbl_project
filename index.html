@@ -81,25 +81,64 @@
         </section>
 
         <section id="methodology" class="space-y-12">
-            <h2 class="text-4xl font-black text-center uppercase tracking-tight">System <span class="text-blue-500">Methodology</span></h2>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass p-8 rounded-3xl text-center">
-                    <i class="fas fa-database text-blue-500 text-3xl mb-4"></i>
-                    <h3 class="font-bold mb-2 uppercase text-xs tracking-widest">Dataset / Input</h3>
-                    <p class="text-sm text-slate-500">[Source, size, and preprocessing details]</p>
-                </div>
-                <div class="glass p-8 rounded-3xl text-center">
-                    <i class="fas fa-microchip text-purple-500 text-3xl mb-4"></i>
-                    <h3 class="font-bold mb-2 uppercase text-xs tracking-widest">Model / Architecture</h3>
-                    <p class="text-sm text-slate-500">[Algorithms used or System Workflow]</p>
-                </div>
-                <div class="glass p-8 rounded-3xl text-center border-2 border-green-500/20 bg-green-500/5">
-                    <i class="fab fa-python text-green-500 text-3xl mb-4"></i>
-                    <h3 class="font-bold mb-4 uppercase text-xs tracking-widest text-green-400">Live Execution</h3>
-                    <a href="[LINK]" target="_blank" class="px-6 py-2 bg-green-600 rounded-full text-[10px] font-black hover:bg-green-500 transition shadow-lg shadow-green-900/40">VIEW CODE / DEMO</a>
-                </div>
-            </div>
-        </section>
+    <h2 class="text-4xl font-black text-center uppercase tracking-tight">
+        System <span class="text-blue-500">Methodology</span>
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+        <!-- Dataset Box -->
+        <div class="glass p-8 rounded-3xl text-center">
+            <i class="fas fa-database text-blue-500 text-3xl mb-4"></i>
+            <h3 class="font-bold mb-4 uppercase text-xs tracking-widest">Dataset / Input</h3>
+
+            <ul class="text-sm text-slate-500 list-disc list-inside space-y-2 text-left">
+                <li>Synthetically generated road network graph simulating real-world traffic.</li>
+                <li>Nodes represent intersections; edges represent road segments.</li>
+                <li>Each edge contains distance (km) and vehicle density attributes.</li>
+                <li>Traffic simulated using global multiplier & road capacity.</li>
+                <li>Configurable graph size (5–20 nodes).</li>
+                <li>Edge weights computed dynamically based on congestion.</li>
+                <li>No external datasets required.</li>
+            </ul>
+        </div>
+
+        <!-- Model Box -->
+        <div class="glass p-8 rounded-3xl text-center">
+            <i class="fas fa-microchip text-purple-500 text-3xl mb-4"></i>
+            <h3 class="font-bold mb-4 uppercase text-xs tracking-widest">Model / Architecture</h3>
+
+            <ul class="text-sm text-slate-500 list-disc list-inside space-y-2 text-left">
+                <li>Genetic Algorithm used for route optimization.</li>
+                <li>Initial population generated with random routes.</li>
+                <li>Multi-objective fitness function (Time, Distance, Fuel).</li>
+                <li>Selection, Crossover, and Mutation applied iteratively.</li>
+                <li>Adaptive weights adjust based on traffic conditions.</li>
+                <li>Best route selected after convergence.</li>
+                <li>Comparison with traditional shortest-path approach.</li>
+            </ul>
+        </div>
+
+        <!-- Live Execution Box -->
+        <div class="glass p-8 rounded-3xl text-center border-2 border-green-500/20 bg-green-500/5">
+            <i class="fab fa-python text-green-500 text-3xl mb-4"></i>
+            <h3 class="font-bold mb-4 uppercase text-xs tracking-widest text-green-400">
+                Live Execution
+            </h3>
+
+            <ul class="text-sm text-slate-400 list-disc list-inside space-y-2 text-left mb-6">
+                <li>Real-time simulation of traffic conditions.</li>
+                <li>Displays optimized route & performance metrics.</li>
+            </ul>
+
+            <a href="demo.html" target="_blank"
+               class="px-6 py-2 bg-green-600 rounded-full text-[10px] font-black hover:bg-green-500 transition shadow-lg shadow-green-900/40">
+               VIEW CODE / DEMO
+            </a>
+        </div>
+
+    </div>
+</section>
 
         <section id="results" class="glass p-12 rounded-[3.5rem] border-t-4 border-blue-500">
             <h2 class="text-3xl font-black mb-12 text-center uppercase tracking-tight">Results & <span class="text-blue-500">Analysis</span></h2>
