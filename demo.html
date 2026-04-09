@@ -2,288 +2,284 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Adaptive Routing System</title>
+<title>Routing System + CSS 3D View</title>
 <script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-canvas { background:#111827; border-radius:12px; }
+    .map-3d {
+        transform: perspective(800px) rotateX(55deg);
+        transform-style: preserve-3d;
+        border-radius: 12px;
+        height: 400px;
+        width: 100%;
+        background: #d9d9d9;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .node-3d {
+        width: 14px;
+        height: 14px;
+        background: #333;
+        border-radius: 50%;
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
+
+    .edge-3d {
+        position: absolute;
+        background: #aaa;
+        transform-origin: 0 0;
+        height: 3px;
+    }
+
+    .car-3d {
+        width: 20px;
+        height: 12px;
+        background: #ff4d4d;
+        border-radius: 4px;
+        position: absolute;
+        transform: translate(-50%, -50%);
+    }
 </style>
+
 </head>
 
-<body class="bg-gray-900 text-white min-h-screen p-6">
+<body class="bg-gray-900 text-white p-6">
 
 <h1 class="text-3xl font-bold text-center mb-6">
- Real-Time Traffic Simulation & Time Calculation
+    🚗 Adaptive Routing System (GA + CSS 3D)
 </h1>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
 <!-- LEFT PANEL -->
-<div class="bg-gray-800 p-5 rounded-xl shadow-lg space-y-4">
+<div class="bg-gray-800 p-5 rounded-xl space-y-4">
 
-<h2 class="text-xl font-semibold">Generate Graph</h2>
-<input id="nodeCount" type="number" placeholder="Number of Nodes (5-15)"
-class="w-full p-2 rounded bg-gray-700">
+    <h2 class="text-xl font-semibold">Generate Graph</h2>
+    <input id="nodeCount" type="number" placeholder="Number of Nodes (5–15)" class="w-full p-2 rounded bg-gray-700">
 
-<button onclick="generateGraph()"
-class="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded">
-Generate Graph
-</button>
+    <button onclick="generateGraph()" class="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded">Generate Graph</button>
 
-<hr class="border-gray-600">
+    <h2 class="text-xl font-semibold mt-4">Weather</h2>
+    <select id="weatherSelect" class="w-full p-2 rounded bg-gray-700">
+        <option value="1">Clear</option>
+        <option value="1.3">Rain</option>
+        <option value="1.5">Fog</option>
+    </select>
 
-<h2 class="text-xl font-semibold">Simulate Traffic</h2>
+    <h2 class="text-xl font-semibold mt-4">Time of Day</h2>
+    <select id="peakSelect" class="w-full p-2 rounded bg-gray-700">
+        <option value="1">Normal</option>
+        <option value="1.4">Morning Peak</option>
+        <option value="1.3">Evening Peak</option>
+        <option value="0.8">Night</option>
+    </select>
 
-<label>Global Car Density Multiplier</label>
-<input type="range" min="0.5" max="3" step="0.1" value="1"
-id="trafficSlider" class="w-full">
+    <h2 class="text-xl font-semibold mt-4">Optimize Mode</h2>
+    <select id="optMode" class="w-full p-2 rounded bg-gray-700">
+        <option value="time">Fastest</option>
+        <option value="fuel">Fuel</option>
+        <option value="balanced">Balanced</option>
+    </select>
 
-<span id="trafficValue">1</span>
+    <h2 class="text-xl font-semibold mt-4">Find Route</h2>
 
-<button onclick="updateTraffic()"
-class="w-full bg-green-600 hover:bg-green-700 p-2 rounded mt-2">
-Update Traffic
-</button>
+    <select id="sourceNode" class="w-full p-2 rounded bg-gray-700"></select>
+    <select id="destNode" class="w-full p-2 rounded bg-gray-700"></select>
 
-<hr class="border-gray-600">
+    <button onclick="runGA()" class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded">Run GA</button>
 
-<h2 class="text-xl font-semibold">Find Travel Time</h2>
-
-<select id="sourceNode"
-class="w-full p-2 rounded bg-gray-700"></select>
-
-<select id="destNode"
-class="w-full p-2 rounded bg-gray-700"></select>
-
-<button onclick="calculateFastestPath()"
-class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded">
-Calculate Fastest Time
-</button>
-
-<div id="result" class="mt-4 text-lg"></div>
-
+    <div id="result" class="mt-4 text-lg"></div>
 </div>
 
-<!-- GRAPH -->
-<div class="md:col-span-2 bg-gray-800 p-5 rounded-xl shadow-lg">
-<canvas id="graphCanvas" width="850" height="500"></canvas>
+<!-- 2D CANVAS -->
+<div class="md:col-span-2 bg-gray-800 p-5 rounded-xl">
+    <canvas id="graphCanvas" width="900" height="400"></canvas>
 </div>
 
 </div>
+
+<!-- 3D CSS VIEW -->
+<h2 class="text-2xl font-bold mt-10 mb-4 text-center">🌐 Minimal CSS-3D Vehicle View</h2>
+
+<div class="bg-gray-800 p-5 rounded-xl">
+    <div id="map3D" class="map-3d"></div>
+</div>
+
 
 <script>
-
+// ------------------ Graph Data -------------------
 let nodes = {};
 let edges = {};
-let globalTrafficMultiplier = 1;
-const BASE_SPEED = 60; // km/h
-const ROAD_CAPACITY = 100;
+let canvas = document.getElementById("graphCanvas");
+let ctx = canvas.getContext("2d");
 
-const canvas = document.getElementById("graphCanvas");
-const ctx = canvas.getContext("2d");
+// ------------------ Generate Graph -------------------
+function generateGraph() {
+    let n = Number(document.getElementById("nodeCount").value);
+    if (n < 5 || n > 15) return alert("Enter 5–15 nodes");
 
-// ---------------- GENERATE GRAPH ----------------
+    nodes = {};
+    edges = {};
 
-function generateGraph(){
+    for (let i = 0; i < n; i++) {
+        nodes[String.fromCharCode(65 + i)] = {
+            x: Math.random() * 850 + 25,
+            y: Math.random() * 350 + 25
+        };
+    }
 
-let count = parseInt(document.getElementById("nodeCount").value);
-if(isNaN(count) || count < 2 || count > 20){
-alert("Enter nodes between 2 and 20");
-return;
+    Object.keys(nodes).forEach(a => {
+        edges[a] = {};
+        Object.keys(nodes).forEach(b => {
+            if (a !== b && Math.random() < 0.3) {
+                edges[a][b] = Math.floor(Math.random() * 40 + 20);
+            }
+        });
+    });
+
+    fillSelectors();
+    drawGraph();
+    update3D();
 }
 
-nodes = {};
-edges = {};
-
-let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-for(let i=0;i<count;i++){
-let name = letters[i];
-nodes[name] = {
-x: Math.random()*750 + 50,
-y: Math.random()*400 + 50
-};
-edges[name] = {};
+function fillSelectors() {
+    let s = document.getElementById("sourceNode");
+    let d = document.getElementById("destNode");
+    s.innerHTML = "";
+    d.innerHTML = "";
+    Object.keys(nodes).forEach(n => {
+        s.innerHTML += `<option>${n}</option>`;
+        d.innerHTML += `<option>${n}</option>`;
+    });
 }
 
-let nodeKeys = Object.keys(nodes);
+// ------------------ Draw 2D Graph -------------------
+function drawGraph() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-for(let i=0;i<nodeKeys.length;i++){
-for(let j=i+1;j<nodeKeys.length;j++){
+    // edges
+    for (let a in edges) {
+        for (let b in edges[a]) {
+            ctx.beginPath();
+            ctx.strokeStyle = "#aaa";
+            ctx.moveTo(nodes[a].x, nodes[a].y);
+            ctx.lineTo(nodes[b].x, nodes[b].y);
+            ctx.stroke();
+        }
+    }
 
-if(Math.random() < 0.4){
+    // nodes
+    for (let n in nodes) {
+        ctx.beginPath();
+        ctx.fillStyle = "#fff";
+        ctx.arc(nodes[n].x, nodes[n].y, 8, 0, Math.PI * 2);
+        ctx.fill();
 
-let distance = Math.floor(Math.random()*20)+5;
-let cars = Math.floor(Math.random()*80)+10;
-
-edges[nodeKeys[i]][nodeKeys[j]] = {distance, cars};
-edges[nodeKeys[j]][nodeKeys[i]] = {distance, cars};
-}
-}
-}
-
-updateDropdowns();
-drawGraph();
-}
-
-// ---------------- TRAFFIC UPDATE ----------------
-
-function updateTraffic(){
-
-globalTrafficMultiplier =
-parseFloat(document.getElementById("trafficSlider").value);
-
-document.getElementById("trafficValue").innerText =
-globalTrafficMultiplier;
-
-drawGraph();
+        ctx.fillStyle = "yellow";
+        ctx.fillText(n, nodes[n].x + 10, nodes[n].y);
+    }
 }
 
-// ---------------- DRAW GRAPH ----------------
+// ------------------ Fake GA for Demo -------------------
+function runGA() {
+    let keys = Object.keys(nodes);
+    let path = [keys[0], keys[2], keys[4] || keys[1]];
 
-function drawGraph(highlightPath=[]){
+    document.getElementById("result").innerHTML =
+        `<b>Best Path:</b> ${path.join(" → ")}`;
 
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-for(let from in edges){
-for(let to in edges[from]){
-
-if(from < to){
-
-let edge = edges[from][to];
-let time = calculateEdgeTime(edge.distance, edge.cars);
-
-ctx.strokeStyle="gray";
-ctx.beginPath();
-ctx.moveTo(nodes[from].x,nodes[from].y);
-ctx.lineTo(nodes[to].x,nodes[to].y);
-ctx.stroke();
-
-// show data
-let midX=(nodes[from].x+nodes[to].x)/2;
-let midY=(nodes[from].y+nodes[to].y)/2;
-
-ctx.fillStyle="yellow";
-ctx.fillText(
-`D:${edge.distance}km C:${edge.cars} T:${time.toFixed(2)}h`,
-midX,midY
-);
-}
-}
+    animateCar(path);
+    highlightPath(path);
 }
 
-// highlight path
-if(highlightPath.length>0){
-ctx.strokeStyle="red";
-ctx.lineWidth=4;
+// 2D highlight
+function highlightPath(p) {
+    drawGraph();
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 3;
 
-for(let i=0;i<highlightPath.length-1;i++){
-ctx.beginPath();
-ctx.moveTo(nodes[highlightPath[i]].x,nodes[highlightPath[i]].y);
-ctx.lineTo(nodes[highlightPath[i+1]].x,nodes[highlightPath[i+1]].y);
-ctx.stroke();
-}
-ctx.lineWidth=1;
-}
+    ctx.beginPath();
+    ctx.moveTo(nodes[p[0]].x, nodes[p[0]].y);
+    for (let i = 1; i < p.length; i++)
+        ctx.lineTo(nodes[p[i]].x, nodes[p[i]].y);
+    ctx.stroke();
 
-// draw nodes
-for(let n in nodes){
-ctx.fillStyle="white";
-ctx.beginPath();
-ctx.arc(nodes[n].x,nodes[n].y,15,0,Math.PI*2);
-ctx.fill();
-ctx.fillStyle="black";
-ctx.fillText(n,nodes[n].x-4,nodes[n].y+4);
-}
+    ctx.lineWidth = 1;
 }
 
-// ---------------- TIME CALCULATION ----------------
+// ---------------- CSS 3D View -------------------
+function update3D() {
+    let div = document.getElementById("map3D");
+    div.innerHTML = "";
 
-function calculateEdgeTime(distance, cars){
+    // draw edges
+    for (let a in edges) {
+        for (let b in edges[a]) {
+            let x1 = nodes[a].x, y1 = nodes[a].y;
+            let x2 = nodes[b].x, y2 = nodes[b].y;
 
-let trafficFactor =
-1 + ((cars * globalTrafficMultiplier) / ROAD_CAPACITY);
+            let dx = x2 - x1, dy = y2 - y1;
+            let dist = Math.sqrt(dx * dy + dy * dy);
 
-return (distance / BASE_SPEED) * trafficFactor;
+            let edge = document.createElement("div");
+            edge.className = "edge-3d";
+
+            edge.style.width = dist + "px";
+            edge.style.left = x1 + "px";
+            edge.style.top = y1 + "px";
+            edge.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+
+            div.appendChild(edge);
+        }
+    }
+
+    // draw nodes
+    for (let n in nodes) {
+        let nodeEl = document.createElement("div");
+        nodeEl.className = "node-3d";
+        nodeEl.style.left = nodes[n].x + "px";
+        nodeEl.style.top = nodes[n].y + "px";
+        div.appendChild(nodeEl);
+    }
 }
 
-// ---------------- DIJKSTRA USING TIME ----------------
+// ---------------- Car Movement -------------------
+function animateCar(path) {
+    let div = document.getElementById("map3D");
+    let car = document.createElement("div");
+    car.className = "car-3d";
+    div.appendChild(car);
 
-function calculateFastestPath(){
+    let i = 0;
 
-let start=document.getElementById("sourceNode").value;
-let end=document.getElementById("destNode").value;
+    function move() {
+        if (i >= path.length - 1) return;
 
-let times={}, prev={}, pq=[];
+        let A = nodes[path[i]];
+        let B = nodes[path[i + 1]];
 
-for(let node in nodes){
-times[node]=Infinity;
-prev[node]=null;
-pq.push(node);
+        let steps = 80, t = 0;
+
+        let interval = setInterval(() => {
+            let x = A.x + (B.x - A.x) * (t / steps);
+            let y = A.y + (B.y - A.y) * (t / steps);
+
+            car.style.left = x + "px";
+            car.style.top = y + "px";
+
+            t++;
+            if (t > steps) {
+                clearInterval(interval);
+                i++;
+                move();
+            }
+        }, 20);
+    }
+    move();
 }
-
-times[start]=0;
-
-while(pq.length>0){
-
-pq.sort((a,b)=>times[a]-times[b]);
-let current=pq.shift();
-
-if(current===end) break;
-
-for(let neighbor in edges[current]){
-
-let edge = edges[current][neighbor];
-let edgeTime =
-calculateEdgeTime(edge.distance, edge.cars);
-
-let alt = times[current] + edgeTime;
-
-if(alt < times[neighbor]){
-times[neighbor]=alt;
-prev[neighbor]=current;
-}
-}
-}
-
-// reconstruct path
-let path=[];
-let u=end;
-
-while(u){
-path.unshift(u);
-u=prev[u];
-}
-
-drawGraph(path);
-
-document.getElementById("result").innerHTML=
-`Fastest Travel Time: <b>${times[end].toFixed(2)} hours</b>
-<br>Path: ${path.join(" → ")}`;
-}
-
-// ---------------- DROPDOWN ----------------
-
-function updateDropdowns(){
-let selects=["sourceNode","destNode"];
-selects.forEach(id=>{
-let sel=document.getElementById(id);
-sel.innerHTML="";
-for(let n in nodes){
-let option=document.createElement("option");
-option.value=n;
-option.text=n;
-sel.appendChild(option);
-}
-});
-}
-
-// slider live update
-document.getElementById("trafficSlider")
-.addEventListener("input",function(){
-document.getElementById("trafficValue").innerText=this.value;
-});
 
 </script>
-
 </body>
 </html>
