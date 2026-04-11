@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Advanced Travel Route Optimization - Real-Time GA System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -24,7 +25,58 @@
             background: rgba(20, 30, 50, 0.6);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 14px;
+        }
+
+        .hero-bar {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #1d4ed8 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .feature-badge {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: #fff;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(8px);
+        }
+
+        .status-chip {
+            background: rgba(16, 185, 129, 0.18);
+            color: #86efac;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.6rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            width: fit-content;
+            white-space: nowrap;
+        }
+
+        .summary-card {
+            background: rgba(20, 30, 50, 0.58);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 0.9rem 1rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+        }
+
+        .summary-label {
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .summary-value {
+            margin-top: 0.35rem;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: white;
         }
 
         .card-header {
@@ -67,14 +119,14 @@
         }
 
         .btn {
-            padding: 0.6rem 1rem;
-            border-radius: 6px;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
             font-weight: 600;
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
+            font-size: 0.82rem;
+            letter-spacing: 0.4px;
             width: 100%;
             margin-bottom: 0.5rem;
         }
@@ -90,7 +142,10 @@
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
         }
 
-        .btn-primary:disabled {
+        .btn-primary:disabled,
+        .btn-secondary:disabled,
+        .btn-success:disabled,
+        .btn-warning:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
@@ -125,6 +180,11 @@
             background: rgba(239, 68, 68, 0.3);
         }
 
+        .btn-wide {
+            padding: 0.82rem 1rem;
+            font-size: 0.88rem;
+        }
+
         canvas {
             border-radius: 8px;
             background: linear-gradient(135deg, #1a1f3a 0%, #0d1b2a 100%);
@@ -140,7 +200,7 @@
             border-radius: 6px !important;
             transition: all 0.3s ease;
             width: 100%;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
         }
 
         input:focus, select:focus {
@@ -148,6 +208,13 @@
             border-color: #3b82f6 !important;
             background: rgba(40, 60, 90, 0.9) !important;
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .helper-text {
+            display: block;
+            color: #94a3b8;
+            font-size: 0.72rem;
+            margin: 0 0 0.55rem 0;
         }
 
         .progress-bar {
@@ -172,12 +239,18 @@
             padding: 1rem;
             border-radius: 8px;
             margin: 0.5rem 0;
+            transition: all 0.25s ease;
         }
 
         .comparison-card.ga { border-left-color: #8b5cf6; }
         .comparison-card.dijkstra { border-left-color: #f59e0b; }
         .comparison-card.astar { border-left-color: #06b6d4; }
         .comparison-card.bellman { border-left-color: #ec4899; }
+
+        .comparison-card.highlight-winner {
+            box-shadow: 0 0 0 1px rgba(16,185,129,0.5), 0 0 20px rgba(16,185,129,0.15);
+            transform: translateY(-2px);
+        }
 
         .case-study-card {
             background: rgba(30, 45, 70, 0.8);
@@ -190,6 +263,7 @@
         .metric-row {
             display: flex;
             justify-content: space-between;
+            gap: 0.8rem;
             padding: 0.5rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.85rem;
@@ -219,20 +293,6 @@
             border-radius: 3px;
         }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(59, 130, 246, 0.3);
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         .label-text {
             font-size: 0.75rem;
             color: #a0aec0;
@@ -240,15 +300,6 @@
             display: block;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: white;
-            margin: 1.5rem 0 1rem 0;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid rgba(139, 92, 246, 0.3);
         }
 
         .info-box {
@@ -280,114 +331,374 @@
             margin: 0.5rem 0;
             color: #fca5a5;
         }
+
+        .tabs-wrap {
+            margin: 0.2rem 0 0.5rem 0;
+        }
+
+        .tabs-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .tab-btn {
+            background: rgba(30, 45, 70, 0.72);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover {
+            background: rgba(59, 130, 246, 0.18);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
+        }
+
+        .tab-panel {
+            display: none;
+            animation: fadeTab 0.25s ease;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeTab {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .execution-log {
+            max-height: 420px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .log-entry {
+            background: rgba(30, 45, 70, 0.65);
+            border-left: 4px solid #3b82f6;
+            border-radius: 8px;
+            padding: 0.7rem 0.8rem;
+            font-size: 0.8rem;
+            color: #dbeafe;
+        }
+
+        .log-time {
+            color: #93c5fd;
+            font-size: 0.7rem;
+            margin-bottom: 0.15rem;
+            display: block;
+        }
+
+        .route-insight {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 4px solid #8b5cf6;
+            color: #ddd6fe;
+            padding: 0.9rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            margin-top: 0.8rem;
+        }
+
+        .graph-wrap {
+            position: relative;
+        }
+
+        .tooltip-box {
+            position: absolute;
+            display: none;
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            padding: 0.5rem 0.65rem;
+            font-size: 0.75rem;
+            z-index: 20;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+        }
+
+        .case-outcome {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.12);
+            color: #86efac;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 text-white py-6 px-4 shadow-2xl">
+    <div class="hero-bar text-white py-6 px-4 shadow-2xl">
         <div class="max-w-full mx-auto">
-            <h1 class="text-3xl lg:text-4xl font-bold mb-2">🚗 Real-Time Travel Route Optimization System</h1>
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl lg:text-4xl font-bold mb-2">🚗 Real-Time Travel Route Optimization System</h1>
+                    <p class="text-sm lg:text-base text-blue-100 max-w-3xl">
+                        Adaptive multi-objective route planning under traffic, weather, and accident conditions using Genetic Algorithm.
+                    </p>
+
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <span class="feature-badge">Adaptive GA</span>
+                        <span class="feature-badge">Multi-Objective</span>
+                        <span class="feature-badge">Scenario Testing</span>
+                        <span class="feature-badge">Real-Time Visualization</span>
+                    </div>
+                </div>
+
+                <div class="status-chip" id="systemStatusChip">● System Ready</div>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+                <div class="summary-card">
+                    <div class="summary-label">Nodes Generated</div>
+                    <div class="summary-value" id="summaryNodes">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Accident Zones</div>
+                    <div class="summary-value" id="summaryAccidents">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Traffic Multiplier</div>
+                    <div class="summary-value" id="summaryTraffic">1.00x</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Best Algorithm</div>
+                    <div class="summary-value" id="summaryBestAlgo">-</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="max-w-full mx-auto p-4 lg:p-6 space-y-6">
+        <div class="tabs-wrap">
+            <div class="tabs-bar">
+                <button class="tab-btn active" onclick="showTab('dashboardTab', this)">Dashboard</button>
+                <button class="tab-btn" onclick="showTab('visualizationTab', this)">Visualization</button>
+                <button class="tab-btn" onclick="showTab('comparisonTab', this)">Comparison</button>
+                <button class="tab-btn" onclick="showTab('caseStudiesTab', this)">Case Studies</button>
+            </div>
+        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+        <!-- DASHBOARD -->
+        <div id="dashboardTab" class="tab-panel active">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div class="space-y-4">
+                    <div class="glass p-4 rounded-xl">
+                        <div class="card-header mb-3">Configuration</div>
 
-            <div class="lg:col-span-1 space-y-4">
+                        <label class="label-text">Number of Nodes (5-15)</label>
+                        <input id="nodeCount" type="number" value="8" min="5" max="15">
 
-                <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">⚙️ Configuration</div>
-                    
-                    <label class="label-text">Number of Nodes (5-15)</label>
-                    <input id="nodeCount" type="number" value="8" min="5" max="15">
-                    
-                    <label class="label-text">Optimization Mode</label>
-                    <select id="optMode">
-                        <option value="time">⏱️ Fastest (60% time)</option>
-                        <option value="distance">📍 Shortest (50% distance)</option>
-                        <option value="fuel">⛽ Cheapest (60% fuel)</option>
-                        <option value="balanced" selected>⚖️ Balanced (33% each)</option>
-                    </select>
+                        <label class="label-text">Optimization Mode</label>
+                        <select id="optMode">
+                            <option value="time">Fastest (60% time)</option>
+                            <option value="distance">Shortest (50% distance)</option>
+                            <option value="fuel">Cheapest (60% fuel)</option>
+                            <option value="balanced" selected>Balanced (33% each)</option>
+                        </select>
 
-                    <label class="label-text">Weather Condition</label>
-                    <select id="weatherSelect">
-                        <option value="1">☀️ Clear (1.0x)</option>
-                        <option value="1.3">🌧️ Rain (1.3x)</option>
-                        <option value="1.5">🌫️ Fog (1.5x)</option>
-                        <option value="1.7">❄️ Snow (1.7x)</option>
-                    </select>
+                        <label class="label-text">Weather Condition</label>
+                        <select id="weatherSelect">
+                            <option value="1">Clear (1.0x)</option>
+                            <option value="1.3">Rain (1.3x)</option>
+                            <option value="1.5">Fog (1.5x)</option>
+                            <option value="1.7">Snow (1.7x)</option>
+                        </select>
 
-                    <label class="label-text">Time of Day</label>
-                    <select id="peakSelect">
-                        <option value="1">🕐 Normal Traffic</option>
-                        <option value="1.4">🌅 Morning Peak (6-9 AM)</option>
-                        <option value="1.3">🌆 Evening Peak (5-8 PM)</option>
-                        <option value="0.8">🌙 Night (Light)</option>
-                    </select>
+                        <label class="label-text">Time of Day</label>
+                        <select id="peakSelect">
+                            <option value="1">Normal Traffic</option>
+                            <option value="1.4">Morning Peak (6-9 AM)</option>
+                            <option value="1.3">Evening Peak (5-8 PM)</option>
+                            <option value="0.8">Night (Light)</option>
+                        </select>
 
-                    <button onclick="generateGraph()" class="btn btn-primary">Generate Graph</button>
-                    <button onclick="runGA()" class="btn btn-primary" id="runBtn">Run GA Algorithm</button>
+                        <button onclick="generateGraph()" class="btn btn-primary btn-wide">Generate Graph</button>
+                        <button onclick="runGA()" class="btn btn-primary btn-wide" id="runBtn">Run GA Algorithm</button>
 
-                    <div id="result" class="mt-3 text-sm text-gray-300"></div>
-                </div>
+                        <div id="result" class="mt-3 text-sm text-gray-300"></div>
+                    </div>
 
-                <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">🧬 GA Parameters</div>
-                    
-                    <label class="label-text">Population Size</label>
-                    <input id="popSize" type="number" value="50" min="20" max="200">
-                    
-                    <label class="label-text">Generations</label>
-                    <input id="generations" type="number" value="100" min="10" max="500">
-                    
-                    <label class="label-text">Initial Mutation Rate</label>
-                    <input id="mutationRate" type="number" value="0.1" min="0.01" max="0.3" step="0.01">
-                    
-                    <label class="label-text">Crossover Rate</label>
-                    <input id="crossoverRate" type="number" value="0.8" min="0.5" max="0.95" step="0.05">
+                    <div class="glass p-4 rounded-xl">
+                        <div class="card-header mb-3">GA Parameters</div>
 
-                    <div class="info-box mt-3">
-                        Adaptive parameters adjust based on population diversity and convergence during evolution.
+                        <label class="label-text">Population Size</label>
+                        <input id="popSize" type="number" value="50" min="20" max="200">
+                        <span class="helper-text">Higher value improves search quality but increases computation time.</span>
+
+                        <label class="label-text">Generations</label>
+                        <input id="generations" type="number" value="100" min="10" max="300">
+                        <span class="helper-text">More generations may improve route fitness and stability.</span>
+
+                        <label class="label-text">Initial Mutation Rate</label>
+                        <input id="mutationRate" type="number" value="0.10" min="0.01" max="0.30" step="0.01">
+                        <span class="helper-text">Higher mutation explores more routes, lower mutation stabilizes convergence.</span>
+
+                        <label class="label-text">Crossover Rate</label>
+                        <input id="crossoverRate" type="number" value="0.80" min="0.50" max="0.95" step="0.05">
+                        <span class="helper-text">Crossover combines routes from strong candidate paths.</span>
+
+                        <div class="info-box mt-3">
+                            Adaptive parameters adjust based on population diversity and convergence during evolution.
+                        </div>
+                    </div>
+
+                    <div class="glass p-4 rounded-xl">
+                        <div class="card-header mb-3">What-If Simulation</div>
+                        <div class="action-grid">
+                            <button onclick="injectAccident()" class="btn btn-warning">Inject Accident</button>
+                            <button onclick="increaseTraffic(10)" class="btn btn-secondary">Traffic +10%</button>
+                            <button onclick="increaseTraffic(20)" class="btn btn-secondary">Traffic +20%</button>
+                            <button onclick="increaseTraffic(50)" class="btn btn-warning">Traffic +50%</button>
+                            <button onclick="enableFuelSaving()" class="btn btn-success">Fuel-Saving Mode</button>
+                            <button onclick="resetSimulation()" class="btn btn-secondary">Reset</button>
+                        </div>
+
+                        <div id="whatIfResult" class="mt-2 text-xs text-gray-300"></div>
+                    </div>
+
+                    <div class="glass p-4 rounded-xl">
+                        <div class="card-header mb-3">Case Study Controls</div>
+                        <button onclick="runCaseStudy('peak')" class="btn btn-secondary">Case Study 1: Peak Hour</button>
+                        <button onclick="runCaseStudy('accident')" class="btn btn-secondary">Case Study 2: Rain + Accident</button>
+
+                        <div class="info-box mt-3 text-xs">
+                            Run predefined scenarios to compare GA with traditional algorithms in realistic traffic conditions.
+                        </div>
                     </div>
                 </div>
 
-                <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">🔮 What-If Simulation</div>
-                    
-                    <button onclick="injectAccident()" class="btn btn-warning">⚠️ Inject Accident</button>
-                    <button onclick="increaseTraffic(10)" class="btn btn-secondary">📈 Traffic +10%</button>
-                    <button onclick="increaseTraffic(20)" class="btn btn-secondary">📈 Traffic +20%</button>
-                    <button onclick="increaseTraffic(50)" class="btn btn-warning">📈 Traffic +50%</button>
-                    <button onclick="enableFuelSaving()" class="btn btn-success">⛽ Fuel-Saving Mode</button>
-                    <button onclick="resetSimulation()" class="btn btn-secondary">🔄 Reset</button>
+                <div class="space-y-4">
+                    <div class="glass p-4 rounded-xl">
+                        <div class="card-header mb-3">GA Results</div>
 
-                    <div id="whatIfResult" class="mt-2 text-xs text-gray-300"></div>
+                        <div class="stat-card">
+                            <div class="stat-label">Best Route Found</div>
+                            <div class="stat-value" id="bestRoute" style="font-size: 0.9rem;">-</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Total Distance</div>
+                            <div class="stat-value" id="totalDistance">-</div>
+                            <div style="font-size: 0.7rem; color: #a0aec0;">km</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Estimated Time</div>
+                            <div class="stat-value" id="totalTime">-</div>
+                            <div style="font-size: 0.7rem; color: #a0aec0;">minutes</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Fuel Cost</div>
+                            <div class="stat-value" id="fuelCost">-</div>
+                            <div style="font-size: 0.7rem; color: #a0aec0;">units</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Fitness Score</div>
+                            <div class="stat-value" id="fitnessScore">-</div>
+                        </div>
+
+                        <div class="route-insight" id="routeInsight">
+                            Route insight will appear here after the GA run.
+                        </div>
+                    </div>
+
+                    <div class="glass p-4 rounded-xl">
+                        <div class="card-header mb-3">Performance Metrics</div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Computation Time</div>
+                            <div class="stat-value" id="compTime">-</div>
+                            <div style="font-size: 0.7rem; color: #a0aec0;">ms</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Population Diversity</div>
+                            <div class="stat-value" id="diversity">-</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-label">Generations Completed</div>
+                            <div class="stat-value" id="generationsCompleted">0</div>
+                        </div>
+
+                        <div id="gaProgress" style="display: none; margin-top: 1rem;">
+                            <label class="label-text">Algorithm Progress</label>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span id="currentGen">0</span> / <span id="totalGen">0</span> generations
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">📚 Case Studies</div>
-                    
-                    <button onclick="runCaseStudy('peak')" class="btn btn-secondary">Case Study 1: Peak Hour</button>
-                    <button onclick="runCaseStudy('accident')" class="btn btn-secondary">Case Study 2: Rain+Accident</button>
-
-                    <div class="info-box mt-3 text-xs">
-                        Run predefined scenarios to see how GA adapts to real-world conditions compared to traditional algorithms.
+                <div class="space-y-4">
+                    <div class="glass p-4 rounded-xl">
+                        <div class="card-header mb-3">Live Execution Log</div>
+                        <div id="executionLog" class="execution-log">
+                            <div class="log-entry">
+                                <span class="log-time">System</span>
+                                Dashboard initialized. Generate graph to begin simulation.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="lg:col-span-2 space-y-4 lg:space-y-6">
-
+        <!-- VISUALIZATION -->
+        <div id="visualizationTab" class="tab-panel">
+            <div class="space-y-4 lg:space-y-6">
                 <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">📊 Route Network Visualization</div>
-                    <canvas id="graphCanvas" width="900" height="350"></canvas>
+                    <div class="card-header mb-3">Route Network Visualization</div>
+                    <div class="graph-wrap">
+                        <canvas id="graphCanvas" width="900" height="350"></canvas>
+                        <div id="graphTooltip" class="tooltip-box"></div>
+                    </div>
                     <div class="mt-2 text-xs text-gray-400">
-                        <p>🔵 Blue: Regular Node | 🔴 Red: Accident | 🟢 Green: Start | 🔺 Red: End | 💜 Purple: Optimal Path</p>
+                        <p>Blue: Regular Node | Red: Accident | Green: Start | Orange: End | Purple: Optimal Path</p>
                     </div>
                 </div>
 
                 <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">🌡️ Traffic Congestion Heatmap</div>
+                    <div class="card-header mb-3">Traffic Congestion Heatmap</div>
                     <canvas id="heatmapCanvas" width="900" height="150"></canvas>
                     <div class="mt-2 flex flex-wrap gap-2">
                         <div class="legend-item"><div class="legend-color" style="background: #10b981;"></div><span>Low (0.8-1.0x)</span></div>
@@ -399,7 +710,7 @@
                 </div>
 
                 <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">📈 Adaptive GA Evolution</div>
+                    <div class="card-header mb-3">Adaptive GA Evolution</div>
                     <div style="position: relative; height: 250px;">
                         <canvas id="adaptiveGAChart"></canvas>
                     </div>
@@ -415,295 +726,154 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="lg:col-span-1 space-y-4">
+        <!-- COMPARISON -->
+        <div id="comparisonTab" class="tab-panel">
+            <div class="glass p-6 rounded-xl">
+                <div class="card-header mb-4">Algorithm Comparison: GA vs Dijkstra vs A* vs Bellman-Ford</div>
 
-                <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">🧬 GA Results</div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">Best Route Found</div>
-                        <div class="stat-value" id="bestRoute" style="font-size: 0.9rem;">-</div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <canvas id="comparisonChart" height="300"></canvas>
                     </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">Total Distance</div>
-                        <div class="stat-value" id="totalDistance">-</div>
-                        <div style="font-size: 0.7rem; color: #a0aec0;">km</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-label">Estimated Time</div>
-                        <div class="stat-value" id="totalTime">-</div>
-                        <div style="font-size: 0.7rem; color: #a0aec0;">minutes</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-label">Fuel Cost</div>
-                        <div class="stat-value" id="fuelCost">-</div>
-                        <div style="font-size: 0.7rem; color: #a0aec0;">units</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-label">Fitness Score</div>
-                        <div class="stat-value" id="fitnessScore">-</div>
+                    <div>
+                        <canvas id="fitnessChart" height="300"></canvas>
                     </div>
                 </div>
 
-                <div class="glass p-4 rounded-xl">
-                    <div class="card-header mb-3">⚡ Performance Metrics</div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">Computation Time</div>
-                        <div class="stat-value" id="compTime">-</div>
-                        <div style="font-size: 0.7rem; color: #a0aec0;">ms</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-label">Population Diversity</div>
-                        <div class="stat-value" id="diversity">-</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-label">Generations Completed</div>
-                        <div class="stat-value" id="generationsCompleted">0</div>
-                    </div>
-
-                    <div id="gaProgress" style="display: none; margin-top: 1rem;">
-                        <label class="label-text">Algorithm Progress</label>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1">
-                            <span id="currentGen">0</span> / <span id="totalGen">0</span> generations
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="comparison-card ga">
+                        <div style="font-weight: 600; color: #8b5cf6; margin-bottom: 0.8rem; font-size: 0.95rem;">Genetic Algorithm</div>
+                        <div style="font-size: 0.85rem; line-height: 1.6;">
+                            <div class="metric-row"><span class="metric-label">Distance:</span><span class="metric-value" id="gaDistance">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Time:</span><span class="metric-value" id="gaTime">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Computation:</span><span class="metric-value" id="gaCompTime">-</span></div>
+                            <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
+                                Multi-objective<br>Adaptive parameters<br>Handles dynamic constraints
+                            </div>
                         </div>
                     </div>
+
+                    <div class="comparison-card dijkstra">
+                        <div style="font-weight: 600; color: #f59e0b; margin-bottom: 0.8rem; font-size: 0.95rem;">Dijkstra Algorithm</div>
+                        <div style="font-size: 0.85rem; line-height: 1.6;">
+                            <div class="metric-row"><span class="metric-label">Distance:</span><span class="metric-value" id="dijDistance">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Time:</span><span class="metric-value" id="dijTime">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Computation:</span><span class="metric-value" id="dijCompTime">-</span></div>
+                            <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
+                                Single-objective<br>Guaranteed shortest path<br>Strong for static graphs
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card astar">
+                        <div style="font-weight: 600; color: #06b6d4; margin-bottom: 0.8rem; font-size: 0.95rem;">A* Algorithm</div>
+                        <div style="font-size: 0.85rem; line-height: 1.6;">
+                            <div class="metric-row"><span class="metric-label">Distance:</span><span class="metric-value" id="astarDistance">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Time:</span><span class="metric-value" id="astarTime">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Computation:</span><span class="metric-value" id="astarCompTime">-</span></div>
+                            <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
+                                Heuristic-guided<br>Fast targeted search<br>Best for single destination
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card bellman">
+                        <div style="font-weight: 600; color: #ec4899; margin-bottom: 0.8rem; font-size: 0.95rem;">Bellman-Ford</div>
+                        <div style="font-size: 0.85rem; line-height: 1.6;">
+                            <div class="metric-row"><span class="metric-label">Distance:</span><span class="metric-value" id="bellmanDistance">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Time:</span><span class="metric-value" id="bellmanTime">-</span></div>
+                            <div class="metric-row"><span class="metric-label">Computation:</span><span class="metric-value" id="bellmanCompTime">-</span></div>
+                            <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
+                                Flexible edge relaxation<br>Stable baseline<br>Usually slower
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="success-box mt-4" id="comparisonConclusion">
+                    Run the algorithm to compare performance across GA, Dijkstra, A*, and Bellman-Ford.
                 </div>
             </div>
         </div>
 
-        <div class="glass p-6 rounded-xl">
-            <div class="card-header mb-4">📊 Algorithm Comparison: GA vs Dijkstra vs A* vs Bellman-Ford</div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <canvas id="comparisonChart" height="300"></canvas>
-                </div>
-                <div>
-                    <canvas id="fitnessChart" height="300"></canvas>
-                </div>
-            </div>
+        <!-- CASE STUDIES -->
+        <div id="caseStudiesTab" class="tab-panel">
+            <div class="glass p-6 rounded-xl">
+                <div class="card-header mb-4">Real-World Case Studies</div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="comparison-card ga">
-                    <div style="font-weight: 600; color: #8b5cf6; margin-bottom: 0.8rem; font-size: 0.95rem;">🧬 Genetic Algorithm</div>
-                    <div style="font-size: 0.85rem; line-height: 1.6;">
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Distance:</span>
-                            <span class="metric-value" id="gaDistance">-</span>
-                        </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Time:</span>
-                            <span class="metric-value" id="gaTime">-</span>
-                        </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Computation:</span>
-                            <span class="metric-value" id="gaCompTime">-</span>
-                        </div>
-                        <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
-                            ✓ Multi-objective<br>✓ Adaptive params<br>✓ Handles constraints
-                        </div>
-                    </div>
-                </div>
+                <div id="caseStudyResults" class="space-y-4">
+                    <div class="case-study-card">
+                        <h3 class="text-lg font-bold mb-2" style="color: #60a5fa;">Case Study 1: Peak Hour Traffic Scenario (6-9 AM)</h3>
+                        <p class="text-xs text-gray-400 mb-3">
+                            Scenario: Heavy morning rush hour with 1.4x traffic congestion multiplier across all roads. Clear weather conditions.
+                        </p>
 
-                <div class="comparison-card dijkstra">
-                    <div style="font-weight: 600; color: #f59e0b; margin-bottom: 0.8rem; font-size: 0.95rem;">📍 Dijkstra Algorithm</div>
-                    <div style="font-size: 0.85rem; line-height: 1.6;">
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Distance:</span>
-                            <span class="metric-value" id="dijDistance">-</span>
+                        <div style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
+                            <div class="metric-row"><span class="metric-label">Scenario Parameters:</span><span class="metric-value">1.4x Peak Hour Multiplier</span></div>
+                            <div class="metric-row"><span class="metric-label">Weather:</span><span class="metric-value">Clear (1.0x)</span></div>
+                            <div class="metric-row"><span class="metric-label">Traffic Type:</span><span class="metric-value">Heavy Rush Hour</span></div>
                         </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Time:</span>
-                            <span class="metric-value" id="dijTime">-</span>
-                        </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Computation:</span>
-                            <span class="metric-value" id="dijCompTime">-</span>
-                        </div>
-                        <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
-                            ✓ Single-objective<br>✓ Guaranteed optimal<br>✓ O(V²) complexity
-                        </div>
-                    </div>
-                </div>
 
-                <div class="comparison-card astar">
-                    <div style="font-weight: 600; color: #06b6d4; margin-bottom: 0.8rem; font-size: 0.95rem;">⭐ A* Algorithm</div>
-                    <div style="font-size: 0.85rem; line-height: 1.6;">
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Distance:</span>
-                            <span class="metric-value" id="astarDistance">-</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div style="background: rgba(139, 92, 246, 0.1); padding: 0.8rem; border-radius: 6px;">
+                                <div class="metric-label">GA Route Performance</div>
+                                <div class="metric-row"><span>Distance:</span><span class="metric-value" id="case1GAdist">-</span></div>
+                                <div class="metric-row"><span>Time:</span><span class="metric-value" id="case1GAtime">-</span></div>
+                                <div class="metric-row"><span>Fuel Cost:</span><span class="metric-value" id="case1GAfuel">-</span></div>
+                            </div>
+                            <div style="background: rgba(245, 158, 11, 0.1); padding: 0.8rem; border-radius: 6px;">
+                                <div class="metric-label">Dijkstra Route Performance</div>
+                                <div class="metric-row"><span>Distance:</span><span class="metric-value" id="case1DIJdist">-</span></div>
+                                <div class="metric-row"><span>Time:</span><span class="metric-value" id="case1DIJtime">-</span></div>
+                                <div class="metric-row"><span>Fuel Cost:</span><span class="metric-value" id="case1DIJfuel">-</span></div>
+                            </div>
                         </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Time:</span>
-                            <span class="metric-value" id="astarTime">-</span>
-                        </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Computation:</span>
-                            <span class="metric-value" id="astarCompTime">-</span>
-                        </div>
-                        <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
-                            ✓ Heuristic-guided<br>✓ Fast on single-obj<br>✓ O(E) best case
-                        </div>
-                    </div>
-                </div>
 
-                <div class="comparison-card bellman">
-                    <div style="font-weight: 600; color: #ec4899; margin-bottom: 0.8rem; font-size: 0.95rem;">🔄 Bellman-Ford</div>
-                    <div style="font-size: 0.85rem; line-height: 1.6;">
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Distance:</span>
-                            <span class="metric-value" id="bellmanDistance">-</span>
+                        <div class="success-box">
+                            <strong>Analysis:</strong> Time Savings (GA vs Dijkstra):
+                            <span id="case1Savings" style="color: #10b981; font-weight: 600;">-</span> |
+                            Distance Trade-off:
+                            <span id="case1Distance" style="color: #10b981; font-weight: 600;">-</span>
                         </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Time:</span>
-                            <span class="metric-value" id="bellmanTime">-</span>
-                        </div>
-                        <div class="metric-row" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span class="metric-label">Computation:</span>
-                            <span class="metric-value" id="bellmanCompTime">-</span>
-                        </div>
-                        <div style="margin-top: 0.8rem; color: #a0aec0; font-size: 0.75rem;">
-                            ✓ Handles negatives<br>✓ Guaranteed optimal<br>✓ O(VE) slower
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="glass p-6 rounded-xl">
-            <div class="card-header mb-4">📚 Real-World Case Studies</div>
-            
-            <div id="caseStudyResults" class="space-y-4">
-                <div class="case-study-card">
-                    <h3 class="text-lg font-bold mb-2" style="color: #60a5fa;">📖 Case Study 1: Peak Hour Traffic Scenario (6-9 AM)</h3>
-                    <p class="text-xs text-gray-400 mb-3">
-                        Scenario: Heavy morning rush hour with 1.4x traffic congestion multiplier across all roads. 
-                        Clear weather conditions. Users commuting to office during peak business hours.
-                    </p>
-                    
-                    <div style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
-                        <div class="metric-row">
-                            <span class="metric-label">⏰ Scenario Parameters:</span>
-                            <span class="metric-value">1.4x Peak Hour Multiplier</span>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">🌤️ Weather:</span>
-                            <span class="metric-value">Clear (1.0x)</span>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">🚗 Traffic Type:</span>
-                            <span class="metric-value">Heavy Rush Hour</span>
-                        </div>
+                        <div class="case-outcome">Outcome: Adaptive response successful</div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                        <div style="background: rgba(139, 92, 246, 0.1); padding: 0.8rem; border-radius: 6px;">
-                            <div class="metric-label">🧬 GA Route Performance</div>
-                            <div class="metric-row">
-                                <span>Distance:</span>
-                                <span class="metric-value" id="case1GAdist">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Time:</span>
-                                <span class="metric-value" id="case1GAtime">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Fuel Cost:</span>
-                                <span class="metric-value" id="case1GAfuel">-</span>
-                            </div>
-                        </div>
-                        <div style="background: rgba(245, 158, 11, 0.1); padding: 0.8rem; border-radius: 6px;">
-                            <div class="metric-label">📍 Dijkstra Route Performance</div>
-                            <div class="metric-row">
-                                <span>Distance:</span>
-                                <span class="metric-value" id="case1DIJdist">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Time:</span>
-                                <span class="metric-value" id="case1DIJtime">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Fuel Cost:</span>
-                                <span class="metric-value" id="case1DIJfuel">-</span>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="case-study-card">
+                        <h3 class="text-lg font-bold mb-2" style="color: #60a5fa;">Case Study 2: Rain + Accident Emergency Scenario</h3>
+                        <p class="text-xs text-gray-400 mb-3">
+                            Scenario: Heavy rain (1.5x weather multiplier) plus an accident blocking a major road segment.
+                        </p>
 
-                    <div class="success-box">
-                        <strong>✓ Analysis:</strong> Time Savings (GA vs Dijkstra): <span id="case1Savings" style="color: #10b981; font-weight: 600;">-</span> minutes | 
-                        Distance Trade-off: <span id="case1Distance" style="color: #10b981; font-weight: 600;">-</span> km
-                    </div>
-                </div>
+                        <div style="background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
+                            <div class="metric-row"><span class="metric-label">Weather Multiplier:</span><span class="metric-value">1.5x (Rain)</span></div>
+                            <div class="metric-row"><span class="metric-label">Accident Penalty:</span><span class="metric-value">100% (Road Blocked)</span></div>
+                            <div class="metric-row"><span class="metric-label">Status:</span><span class="metric-value" style="color: #ef4444;">Critical - Route Recalculation</span></div>
+                        </div>
 
-                <div class="case-study-card">
-                    <h3 class="text-lg font-bold mb-2" style="color: #60a5fa;">📖 Case Study 2: Rain + Accident Emergency Scenario</h3>
-                    <p class="text-xs text-gray-400 mb-3">
-                        Scenario: Heavy rain (1.5x weather multiplier) + accident blocking major road segment (100% penalty). 
-                        Tests system's ability to avoid blocked routes and adapt weights for weather conditions.
-                    </p>
-                    
-                    <div style="background: rgba(239, 68, 68, 0.1); border-left: 3px solid #ef4444; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
-                        <div class="metric-row">
-                            <span class="metric-label">🌧️ Weather Multiplier:</span>
-                            <span class="metric-value">1.5x (Rain)</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div style="background: rgba(139, 92, 246, 0.1); padding: 0.8rem; border-radius: 6px;">
+                                <div class="metric-label">GA Route (Adaptive)</div>
+                                <div class="metric-row"><span>Distance:</span><span class="metric-value" id="case2GAdist">-</span></div>
+                                <div class="metric-row"><span>Time:</span><span class="metric-value" id="case2GAtime">-</span></div>
+                                <div class="metric-row"><span>Fuel Cost:</span><span class="metric-value" id="case2GAfuel">-</span></div>
+                            </div>
+                            <div style="background: rgba(245, 158, 11, 0.1); padding: 0.8rem; border-radius: 6px;">
+                                <div class="metric-label">Dijkstra Route (Static)</div>
+                                <div class="metric-row"><span>Distance:</span><span class="metric-value" id="case2DIJdist">-</span></div>
+                                <div class="metric-row"><span>Time:</span><span class="metric-value" id="case2DIJtime">-</span></div>
+                                <div class="metric-row"><span>Fuel Cost:</span><span class="metric-value" id="case2DIJfuel">-</span></div>
+                            </div>
                         </div>
-                        <div class="metric-row">
-                            <span class="metric-label">⚠️ Accident Penalty:</span>
-                            <span class="metric-value">100% (Road Blocked)</span>
-                        </div>
-                        <div class="metric-row">
-                            <span class="metric-label">🚧 Status:</span>
-                            <span class="metric-value" style="color: #ef4444;">Critical - Route Recalculation</span>
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                        <div style="background: rgba(139, 92, 246, 0.1); padding: 0.8rem; border-radius: 6px;">
-                            <div class="metric-label">🧬 GA Route (Adaptive)</div>
-                            <div class="metric-row">
-                                <span>Distance:</span>
-                                <span class="metric-value" id="case2GAdist">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Time:</span>
-                                <span class="metric-value" id="case2GAtime">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Fuel Cost:</span>
-                                <span class="metric-value" id="case2GAfuel">-</span>
-                            </div>
+                        <div class="success-box">
+                            <strong>Key Insight:</strong> GA Route Feasibility:
+                            <span id="case2Feasibility" style="color: #10b981; font-weight: 600;">✓ Found Alternative</span> |
+                            Accident Avoidance:
+                            <span id="case2Avoidance" style="color: #10b981; font-weight: 600;">✓ Adaptive</span>
                         </div>
-                        <div style="background: rgba(245, 158, 11, 0.1); padding: 0.8rem; border-radius: 6px;">
-                            <div class="metric-label">📍 Dijkstra Route (Static)</div>
-                            <div class="metric-row">
-                                <span>Distance:</span>
-                                <span class="metric-value" id="case2DIJdist">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Time:</span>
-                                <span class="metric-value" id="case2DIJtime">-</span>
-                            </div>
-                            <div class="metric-row">
-                                <span>Fuel Cost:</span>
-                                <span class="metric-value" id="case2DIJfuel">-</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="success-box">
-                        <strong>✓ Key Insight:</strong> GA Route Feasibility: <span id="case2Feasibility" style="color: #10b981; font-weight: 600;">✓ Found Alternative</span> | 
-                        Accident Avoidance: <span id="case2Avoidance" style="color: #10b981; font-weight: 600;">✓ Adaptive</span>
+                        <div class="case-outcome">Outcome: Blocked route avoided</div>
                     </div>
                 </div>
             </div>
@@ -720,7 +890,6 @@
     </div>
 
     <script>
-        // ==================== GLOBAL STATE ====================
         let nodes = {};
         let edges = {};
         let canvas = document.getElementById("graphCanvas");
@@ -729,14 +898,84 @@
         let fitnessChart = null;
         let adaptiveGAChart = null;
 
-        // Simulation state
         let accidentNodes = [];
         let trafficMultiplier = 1.0;
         let fuelSavingMode = false;
 
-        // ==================== GRAPH GENERATION ====================
+        function showTab(tabId, btn) {
+            document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(button => button.classList.remove("active"));
+
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add("active");
+            if (btn) btn.classList.add("active");
+
+            setTimeout(() => {
+                if (tabId === "visualizationTab") {
+                    if (Object.keys(nodes).length > 0) {
+                        drawGraph();
+                        updateHeatmap();
+                    }
+                    if (adaptiveGAChart) adaptiveGAChart.resize();
+                }
+                if (tabId === "comparisonTab") {
+                    if (comparisonChart) comparisonChart.resize();
+                    if (fitnessChart) fitnessChart.resize();
+                }
+            }, 80);
+        }
+
+        function addLog(message, tag = "System") {
+            const log = document.getElementById("executionLog");
+            if (!log) return;
+
+            const entry = document.createElement("div");
+            entry.className = "log-entry";
+            const now = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="log-time">${tag} • ${now}</span>${message}`;
+            log.prepend(entry);
+        }
+
+        function setStatusChip(text, good = true) {
+            const chip = document.getElementById("systemStatusChip");
+            chip.textContent = "● " + text;
+            chip.style.color = good ? "#86efac" : "#fca5a5";
+            chip.style.borderColor = good ? "rgba(16, 185, 129, 0.35)" : "rgba(239, 68, 68, 0.35)";
+            chip.style.background = good ? "rgba(16, 185, 129, 0.18)" : "rgba(239, 68, 68, 0.18)";
+        }
+
+        function updateHeaderSummary() {
+            document.getElementById("summaryNodes").textContent = Object.keys(nodes).length;
+            document.getElementById("summaryAccidents").textContent = accidentNodes.length;
+            document.getElementById("summaryTraffic").textContent = trafficMultiplier.toFixed(2) + "x";
+        }
+
+        function disableControls(disabled) {
+            document.querySelectorAll("button, input, select").forEach(el => {
+                if (!el.classList.contains("tab-btn")) {
+                    el.disabled = disabled;
+                }
+            });
+            document.querySelectorAll(".tab-btn").forEach(el => el.disabled = false);
+        }
+
+        function generateDistance(a, b) {
+            return Math.ceil(
+                (Math.sqrt(
+                    Math.pow(nodes[a].x - nodes[b].x, 2) +
+                    Math.pow(nodes[a].y - nodes[b].y, 2)
+                ) / 50) * 10
+            ) / 10;
+        }
+
+        function ensureBidirectional(a, b) {
+            const dist = generateDistance(a, b);
+            edges[a][b] = dist;
+            edges[b][a] = dist;
+        }
+
         function generateGraph() {
-            let n = Number(document.getElementById("nodeCount").value);
+            const n = Number(document.getElementById("nodeCount").value);
             if (n < 5 || n > 15) {
                 alert("Enter nodes between 5 and 15");
                 return;
@@ -748,160 +987,238 @@
             trafficMultiplier = 1.0;
             fuelSavingMode = false;
 
-            // Generate nodes
             for (let i = 0; i < n; i++) {
-                let char = String.fromCharCode(65 + i);
+                const char = String.fromCharCode(65 + i);
                 nodes[char] = {
                     x: Math.random() * 850 + 25,
-                    y: Math.random() * 350 + 25,
+                    y: Math.random() * 300 + 25,
                     congestion: Math.random() * 0.8 + 0.6
                 };
+                edges[char] = {};
             }
 
-            // Generate edges
-            Object.keys(nodes).forEach(a => {
-                edges[a] = {};
-                Object.keys(nodes).forEach(b => {
-                    if (a !== b && Math.random() < 0.35) {
-                        let dist = Math.sqrt(
-                            Math.pow(nodes[a].x - nodes[b].x, 2) +
-                            Math.pow(nodes[a].y - nodes[b].y, 2)
-                        ) / 50;
-                        edges[a][b] = Math.ceil(dist * 10) / 10;
-                    }
-                });
-            });
+            const keys = Object.keys(nodes);
 
-            drawGraph();
-            updateHeatmap();
-            document.getElementById("gaProgress").style.display = "none";
-            document.getElementById("whatIfResult").innerHTML = "";
-        }
+            for (let i = 0; i < keys.length - 1; i++) {
+                ensureBidirectional(keys[i], keys[i + 1]);
+            }
 
-        // ==================== DRAWING FUNCTIONS ====================
-        function drawGraph() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw edges
-            for (let a in edges) {
-                for (let b in edges[a]) {
-                    let congestion = Math.max(nodes[a].congestion, nodes[b].congestion) * trafficMultiplier;
-                    let hue = Math.max(0, 120 - congestion * 100);
-                    ctx.strokeStyle = `hsl(${hue}, 70%, 50%)`;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(nodes[a].x, nodes[a].y);
-                    ctx.lineTo(nodes[b].x, nodes[b].y);
-                    ctx.stroke();
-
-                    // Mark accident edges
-                    if (accidentNodes.includes(a) || accidentNodes.includes(b)) {
-                        ctx.strokeStyle = "#ff0000";
-                        ctx.lineWidth = 4;
-                        ctx.beginPath();
-                        ctx.moveTo(nodes[a].x, nodes[a].y);
-                        ctx.lineTo(nodes[b].x, nodes[b].y);
-                        ctx.stroke();
+            for (let i = 0; i < keys.length; i++) {
+                for (let j = i + 1; j < keys.length; j++) {
+                    if (!edges[keys[i]][keys[j]] && Math.random() < 0.32) {
+                        ensureBidirectional(keys[i], keys[j]);
                     }
                 }
             }
 
-            // Draw nodes
-            for (let n in nodes) {
-                ctx.beginPath();
-                ctx.fillStyle = accidentNodes.includes(n) ? "#ff0000" : "#60a5fa";
-                ctx.arc(nodes[n].x, nodes[n].y, 8, 0, Math.PI * 2);
-                ctx.fill();
+            drawGraph();
+            updateHeatmap();
+            updateHeaderSummary();
 
-                ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 12px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(n, nodes[n].x, nodes[n].y);
-            }
+            document.getElementById("gaProgress").style.display = "none";
+            document.getElementById("whatIfResult").innerHTML = "";
+            document.getElementById("result").innerHTML = `<div class="success-box">Connected graph generated with <strong>${n}</strong> nodes.</div>`;
+            setStatusChip("Graph Generated", true);
+            addLog(`Graph generated successfully with <strong>${n}</strong> nodes and connected route structure.`, "Graph");
         }
 
-        function highlightPath(path, color = "#8b5cf6") {
-            drawGraph();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 4;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
+        function drawGraph(path = []) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (path.length > 0) {
+            const drawn = new Set();
+
+            for (let a in edges) {
+                for (let b in edges[a]) {
+                    const key = [a, b].sort().join("-");
+                    if (drawn.has(key)) continue;
+                    drawn.add(key);
+
+                    let congestion = Math.max(nodes[a].congestion, nodes[b].congestion) * trafficMultiplier;
+                    let hue = Math.max(0, 120 - congestion * 100);
+                    const accidentEdge = accidentNodes.includes(a) || accidentNodes.includes(b);
+
+                    ctx.save();
+                    ctx.strokeStyle = accidentEdge ? "#ef4444" : `hsl(${hue}, 70%, 50%)`;
+                    ctx.lineWidth = accidentEdge ? 3.5 : 2;
+                    if (accidentEdge) ctx.setLineDash([8, 6]);
+
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[a].x, nodes[a].y);
+                    ctx.lineTo(nodes[b].x, nodes[b].y);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    const midX = (nodes[a].x + nodes[b].x) / 2;
+                    const midY = (nodes[a].y + nodes[b].y) / 2;
+                    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+                    ctx.fillRect(midX - 16, midY - 10, 32, 16);
+                    ctx.fillStyle = "#cbd5e1";
+                    ctx.font = "10px Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText(edges[a][b].toFixed(1), midX, midY + 2);
+                }
+            }
+
+            if (path.length > 1) {
+                ctx.save();
+                ctx.strokeStyle = "#8b5cf6";
+                ctx.lineWidth = 4;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
                 ctx.beginPath();
                 ctx.moveTo(nodes[path[0]].x, nodes[path[0]].y);
                 for (let i = 1; i < path.length; i++) {
                     ctx.lineTo(nodes[path[i]].x, nodes[path[i]].y);
                 }
                 ctx.stroke();
-
-                // Highlight path nodes
-                path.forEach((node, index) => {
-                    ctx.beginPath();
-                    if (index === 0) {
-                        ctx.fillStyle = "#10b981";
-                    } else if (index === path.length - 1) {
-                        ctx.fillStyle = "#ef4444";
-                    } else {
-                        ctx.fillStyle = "#8b5cf6";
-                    }
-                    ctx.arc(nodes[node].x, nodes[node].y, 10, 0, Math.PI * 2);
-                    ctx.fill();
-                });
+                ctx.restore();
             }
+
+            const keys = Object.keys(nodes);
+            keys.forEach((n, index) => {
+                const isStart = index === 0;
+                const isEnd = index === keys.length - 1;
+                const isAccident = accidentNodes.includes(n);
+
+                ctx.beginPath();
+                ctx.fillStyle = isAccident ? "#ef4444" : isStart ? "#10b981" : isEnd ? "#f97316" : "#60a5fa";
+                ctx.shadowBlur = isStart || isEnd ? 18 : 0;
+                ctx.shadowColor = isStart ? "#10b981" : isEnd ? "#f97316" : "transparent";
+                ctx.arc(nodes[n].x, nodes[n].y, isStart || isEnd ? 10 : 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 12px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(n, nodes[n].x, nodes[n].y);
+            });
+        }
+
+        function highlightPath(path) {
+            drawGraph();
+            let i = 1;
+
+            if (path.length > 0) {
+                ctx.beginPath();
+                ctx.fillStyle = "#10b981";
+                ctx.arc(nodes[path[0]].x, nodes[path[0]].y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function animateSegment() {
+                if (i >= path.length) return;
+
+                ctx.strokeStyle = "#8b5cf6";
+                ctx.lineWidth = 4;
+                ctx.lineCap = "round";
+                ctx.lineJoin = "round";
+
+                ctx.beginPath();
+                ctx.moveTo(nodes[path[i - 1]].x, nodes[path[i - 1]].y);
+                ctx.lineTo(nodes[path[i]].x, nodes[path[i]].y);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.fillStyle = i === path.length - 1 ? "#f97316" : "#8b5cf6";
+                ctx.arc(nodes[path[i]].x, nodes[path[i]].y, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                i++;
+                setTimeout(animateSegment, 160);
+            }
+
+            animateSegment();
+        }
+
+        function animateCar(path) {
+            if (!path || path.length < 2) return;
+            let segment = 0;
+            let t = 0;
+
+            function step() {
+                drawGraph(path);
+
+                const a = nodes[path[segment]];
+                const b = nodes[path[segment + 1]];
+                const x = a.x + (b.x - a.x) * t;
+                const y = a.y + (b.y - a.y) * t;
+
+                ctx.beginPath();
+                ctx.fillStyle = "#facc15";
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                t += 0.04;
+                if (t >= 1) {
+                    t = 0;
+                    segment++;
+                }
+
+                if (segment < path.length - 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    drawGraph(path);
+                }
+            }
+
+            step();
         }
 
         function updateHeatmap() {
-            let canvas = document.getElementById("heatmapCanvas");
-            let ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const heatCanvas = document.getElementById("heatmapCanvas");
+            const hctx = heatCanvas.getContext("2d");
+            hctx.clearRect(0, 0, heatCanvas.width, heatCanvas.height);
 
-            let edges_array = [];
+            let edgeList = [];
+            const drawn = new Set();
+
             for (let a in edges) {
                 for (let b in edges[a]) {
-                    edges_array.push({
+                    const key = [a, b].sort().join("-");
+                    if (drawn.has(key)) continue;
+                    drawn.add(key);
+
+                    edgeList.push({
                         a, b,
                         congestion: Math.max(nodes[a].congestion, nodes[b].congestion) * trafficMultiplier
                     });
                 }
             }
 
-            edges_array.sort((x, y) => x.congestion - y.congestion);
+            edgeList.sort((x, y) => x.congestion - y.congestion);
 
-            if (edges_array.length > 0) {
-                let barWidth = canvas.width / edges_array.length;
-                edges_array.forEach((edge, i) => {
-                    let hue = Math.max(0, 120 - edge.congestion * 100);
-                    ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
-                    ctx.fillRect(i * barWidth, 0, barWidth, canvas.height);
+            if (edgeList.length > 0) {
+                const barWidth = heatCanvas.width / edgeList.length;
+                edgeList.forEach((edge, i) => {
+                    const hue = Math.max(0, 120 - edge.congestion * 100);
+                    hctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+                    hctx.fillRect(i * barWidth, 0, barWidth, heatCanvas.height);
                 });
             }
         }
 
-        // ==================== FITNESS CALCULATION ====================
         function calculateDistance(path) {
             let total = 0;
             for (let i = 0; i < path.length - 1; i++) {
-                if (edges[path[i]] && edges[path[i]][path[i + 1]]) {
-                    total += edges[path[i]][path[i + 1]];
-                }
+                if (!edges[path[i]] || !edges[path[i]][path[i + 1]]) return Infinity;
+                total += edges[path[i]][path[i + 1]];
             }
             return total;
         }
 
         function calculateTime(path) {
             let total = 0;
-            let weather = Number(document.getElementById("weatherSelect").value);
-            let peak = Number(document.getElementById("peakSelect").value);
+            const weather = Number(document.getElementById("weatherSelect").value);
+            const peak = Number(document.getElementById("peakSelect").value);
 
             for (let i = 0; i < path.length - 1; i++) {
-                if (edges[path[i]] && edges[path[i]][path[i + 1]]) {
-                    let distance = edges[path[i]][path[i + 1]];
-                    let congestion = Math.max(nodes[path[i]].congestion, nodes[path[i + 1]].congestion) * trafficMultiplier;
-                    let time = (distance / 30) * 60 * weather * peak * congestion;
-                    total += time;
-                }
+                if (!edges[path[i]] || !edges[path[i]][path[i + 1]]) return Infinity;
+                const distance = edges[path[i]][path[i + 1]];
+                const congestion = Math.max(nodes[path[i]].congestion, nodes[path[i + 1]].congestion) * trafficMultiplier;
+                const time = (distance / 30) * 60 * weather * peak * congestion;
+                total += time;
             }
             return total;
         }
@@ -909,169 +1226,148 @@
         function calculateFuel(path) {
             let total = 0;
             for (let i = 0; i < path.length - 1; i++) {
-                if (edges[path[i]] && edges[path[i]][path[i + 1]]) {
-                    let cost = edges[path[i]][path[i + 1]] * 0.08;
-                    if (fuelSavingMode) cost *= 0.85;
-                    total += cost;
-                }
+                if (!edges[path[i]] || !edges[path[i]][path[i + 1]]) return Infinity;
+                let cost = edges[path[i]][path[i + 1]] * 0.08 * (Math.max(nodes[path[i]].congestion, nodes[path[i + 1]].congestion));
+                if (fuelSavingMode) cost *= 0.85;
+                total += cost;
             }
             return total;
         }
 
         function calculateMultiObjectiveFitness(path) {
-            // Check if route goes through accident zones
-            for (let i = 0; i < path.length - 1; i++) {
-                if (accidentNodes.includes(path[i]) || accidentNodes.includes(path[i + 1])) {
-                    return -Infinity;
+            if (!path || path.length < 2) return 0;
+
+            for (let i = 0; i < path.length; i++) {
+                if (accidentNodes.includes(path[i])) return -Infinity;
+            }
+
+            const distance = calculateDistance(path);
+            const time = calculateTime(path);
+            const fuel = calculateFuel(path);
+
+            if (!isFinite(distance) || !isFinite(time) || !isFinite(fuel)) return -Infinity;
+
+            const mode = document.getElementById("optMode").value;
+            let w1, w2, w3;
+
+            if (mode === "time") { w1 = 0.6; w2 = 0.2; w3 = 0.2; }
+            else if (mode === "distance") { w1 = 0.2; w2 = 0.5; w3 = 0.3; }
+            else if (mode === "fuel") { w1 = 0.2; w2 = 0.2; w3 = 0.6; }
+            else { w1 = 0.34; w2 = 0.33; w3 = 0.33; }
+
+            const maxDistance = 150;
+            const maxTime = 700;
+            const maxFuel = 20;
+
+            const fitness =
+                (w1 / (time / maxTime + 0.1)) +
+                (w2 / (distance / maxDistance + 0.1)) +
+                (w3 / (fuel / maxFuel + 0.1));
+
+            return isFinite(fitness) ? fitness : -Infinity;
+        }
+
+        function randomChoice(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function createRandomPath(start, end) {
+            for (let attempt = 0; attempt < 60; attempt++) {
+                let current = start;
+                let path = [start];
+                let visited = new Set([start]);
+                let steps = 0;
+
+                while (current !== end && steps < Object.keys(nodes).length * 2) {
+                    let neighbors = Object.keys(edges[current] || {}).filter(n => !visited.has(n) && !accidentNodes.includes(n));
+                    if (neighbors.length === 0) break;
+
+                    let next = randomChoice(neighbors);
+                    path.push(next);
+                    visited.add(next);
+                    current = next;
+                    steps++;
+                }
+
+                if (current === end) return path;
+            }
+
+            return dijkstra(start, end);
+        }
+
+        function repairPath(path, start, end) {
+            if (!path || path.length === 0) return dijkstra(start, end);
+
+            let cleaned = [start];
+            let visited = new Set([start]);
+
+            for (let i = 1; i < path.length - 1; i++) {
+                const node = path[i];
+                const prev = cleaned[cleaned.length - 1];
+                if (
+                    node !== start &&
+                    node !== end &&
+                    !visited.has(node) &&
+                    edges[prev] &&
+                    edges[prev][node] &&
+                    !accidentNodes.includes(node)
+                ) {
+                    cleaned.push(node);
+                    visited.add(node);
                 }
             }
 
-            let distance = calculateDistance(path);
-            let time = calculateTime(path);
-            let fuel = calculateFuel(path);
-            let mode = document.getElementById("optMode").value;
+            const last = cleaned[cleaned.length - 1];
+            if (edges[last] && edges[last][end]) {
+                cleaned.push(end);
+                return cleaned;
+            }
 
-            let w1, w2, w3;
-            if (mode === "time") { w1 = 0.6; w2 = 0.2; w3 = 0.2; }
-            else if (mode === "distance") { w1 = 0.2; w2 = 0.5; w3 = 0.3; }
-            else if (mode === "fuel") { w1 = 0.2; w2 = 0.3; w3 = 0.6; }
-            else { w1 = 0.33; w2 = 0.33; w3 = 0.34; }
+            const tail = dijkstra(last, end);
+            if (tail.length >= 2) {
+                cleaned.push(...tail.slice(1));
+                return cleaned;
+            }
 
-            let max_distance = 100, max_time = 500, max_fuel = 10;
-            let fitness = (w1 / (time / max_time + 0.1)) + (w2 / (distance / max_distance + 0.1)) + (w3 / (fuel / max_fuel + 0.1));
-
-            return isFinite(fitness) ? fitness : 0;
+            return dijkstra(start, end);
         }
 
-        // ==================== GENETIC ALGORITHM ====================
-        function createRandomPath(start, end) {
-            let allNodes = Object.keys(nodes).filter(n => n !== start && n !== end);
-            allNodes = allNodes.sort(() => Math.random() - 0.5);
-            let numIntermediate = Math.max(1, Math.floor(Math.random() * (allNodes.length - 1)));
-            return [start, ...allNodes.slice(0, numIntermediate), end];
-        }
-
-        function mutate(path, mutation_rate) {
-            if (path.length < 4 || Math.random() > mutation_rate) return [...path];
+        function mutate(path, mutationRate, start, end) {
             let newPath = [...path];
-            let i = Math.floor(Math.random() * (newPath.length - 2)) + 1;
-            let j = Math.floor(Math.random() * (newPath.length - 2)) + 1;
-            [newPath[i], newPath[j]] = [newPath[j], newPath[i]];
-            return newPath;
+            if (newPath.length > 3 && Math.random() < mutationRate) {
+                const i = Math.floor(Math.random() * (newPath.length - 2)) + 1;
+                const j = Math.floor(Math.random() * (newPath.length - 2)) + 1;
+                [newPath[i], newPath[j]] = [newPath[j], newPath[i]];
+            }
+
+            if (Math.random() < mutationRate * 0.7) {
+                return createRandomPath(start, end);
+            }
+
+            return repairPath(newPath, start, end);
         }
 
-        function crossover(path1, path2, crossover_rate) {
-            if (Math.random() > crossover_rate || path1.length < 4) return [...path1];
-            let point = Math.floor(Math.random() * (Math.min(path1.length, path2.length) - 2)) + 1;
-            return [...path1.slice(0, point), ...path2.slice(point)];
+        function crossover(path1, path2, crossoverRate, start, end) {
+            if (Math.random() > crossoverRate || path1.length < 3 || path2.length < 3) {
+                return repairPath(path1, start, end);
+            }
+
+            const cut1 = Math.floor(Math.random() * (path1.length - 2)) + 1;
+            const cut2 = Math.floor(Math.random() * (path2.length - 2)) + 1;
+
+            const child = [start, ...path1.slice(1, cut1), ...path2.slice(cut2, -1), end];
+            return repairPath(child, start, end);
         }
 
         function calculateDiversity(population) {
             if (population.length < 2) return 0;
-            let fitnesses = population.map(p => p.fitness);
-            let mean = fitnesses.reduce((a, b) => a + b, 0) / fitnesses.length;
-            let variance = fitnesses.reduce((a, f) => a + Math.pow(f - mean, 2), 0) / fitnesses.length;
+            const fitnesses = population.map(p => p.fitness).filter(f => isFinite(f));
+            if (fitnesses.length === 0) return 0;
+            const mean = fitnesses.reduce((a, b) => a + b, 0) / fitnesses.length;
+            const variance = fitnesses.reduce((a, f) => a + Math.pow(f - mean, 2), 0) / fitnesses.length;
             return Math.sqrt(variance);
         }
 
-        function runGA() {
-            let nodeKeys = Object.keys(nodes);
-            if (nodeKeys.length < 2) {
-                alert("Generate graph first!");
-                return;
-            }
-
-            let start = nodeKeys[0];
-            let end = nodeKeys[nodeKeys.length - 1];
-            let popSize = Number(document.getElementById("popSize").value);
-            let gens = Number(document.getElementById("generations").value);
-            let initialMutRate = Number(document.getElementById("mutationRate").value);
-            let initialCrossRate = Number(document.getElementById("crossoverRate").value);
-
-            document.getElementById("gaProgress").style.display = "block";
-            document.getElementById("runBtn").disabled = true;
-
-            let startTime = performance.now();
-            let population = Array(popSize).fill(0).map(() => ({
-                route: createRandomPath(start, end),
-                fitness: 0
-            }));
-
-            population.forEach(p => p.fitness = calculateMultiObjectiveFitness(p.route));
-
-            let fitnessHistory = [];
-            let mutationHistory = [];
-            let crossoverHistory = [];
-            let bestFitness = Math.max(...population.map(p => p.fitness));
-            let bestPath = population[0].route;
-            let mutation_rate = initialMutRate;
-            let crossover_rate = initialCrossRate;
-            let gen = 0;
-
-            const evolve = () => {
-                if (gen >= gens) {
-                    let endTime = performance.now();
-                    displayResults(bestPath, endTime - startTime, fitnessHistory, mutationHistory, crossoverHistory);
-                    document.getElementById("runBtn").disabled = false;
-                    return;
-                }
-
-                // Evaluate diversity
-                let diversity = calculateDiversity(population);
-                let diversity_threshold = 0.05;
-
-                // Adaptive parameters
-                if (diversity < diversity_threshold && gen > 10) {
-                    mutation_rate = Math.min(mutation_rate + 0.05, 0.30);
-                    crossover_rate = Math.min(crossover_rate + 0.05, 0.95);
-                } else if (diversity > 0.5) {
-                    mutation_rate = Math.max(mutation_rate - 0.02, 0.05);
-                    crossover_rate = Math.max(crossover_rate - 0.02, 0.60);
-                }
-
-                mutationHistory.push(mutation_rate);
-                crossoverHistory.push(crossover_rate);
-
-                // Evaluate fitness
-                population.forEach(p => p.fitness = calculateMultiObjectiveFitness(p.route));
-                population.sort((a, b) => b.fitness - a.fitness);
-
-                // Selection and reproduction
-                let newPopulation = [];
-                for (let i = 0; i < popSize; i++) {
-                    let p1 = population[Math.floor(Math.random() * Math.min(5, popSize))];
-                    let p2 = population[Math.floor(Math.random() * Math.min(5, popSize))];
-                    let child = mutate(crossover(p1.route, p2.route, crossover_rate), mutation_rate);
-                    newPopulation.push({ route: child, fitness: 0 });
-                }
-
-                // Elitism
-                population = [...population.slice(0, Math.floor(popSize / 2)), ...newPopulation.slice(0, Math.floor(popSize / 2))];
-
-                // Track best
-                let currentBest = population[0];
-                if (currentBest.fitness > bestFitness) {
-                    bestFitness = currentBest.fitness;
-                    bestPath = currentBest.route;
-                }
-
-                fitnessHistory.push(bestFitness);
-
-                // Update UI
-                document.getElementById("progressFill").style.width = ((gen + 1) / gens * 100) + "%";
-                document.getElementById("currentGen").textContent = gen + 1;
-                document.getElementById("totalGen").textContent = gens;
-                document.getElementById("currentMutationRate").textContent = mutation_rate.toFixed(3);
-                document.getElementById("currentCrossoverRate").textContent = crossover_rate.toFixed(3);
-
-                gen++;
-                setTimeout(evolve, 10);
-            };
-
-            evolve();
-        }
-
-        // ==================== COMPARISON ALGORITHMS ====================
         function dijkstra(start, end) {
             let dist = {};
             let prev = {};
@@ -1086,21 +1382,19 @@
             while (visited.size < Object.keys(nodes).length) {
                 let u = null;
                 for (let n in dist) {
-                    if (!visited.has(n) && (u === null || dist[n] < dist[u])) {
-                        u = n;
-                    }
+                    if (!visited.has(n) && (u === null || dist[n] < dist[u])) u = n;
                 }
                 if (u === null || dist[u] === Infinity) break;
+                if (u === end) break;
+
                 visited.add(u);
 
-                if (edges[u]) {
-                    for (let v in edges[u]) {
-                        if (accidentNodes.includes(u) || accidentNodes.includes(v)) continue;
-                        let alt = dist[u] + edges[u][v];
-                        if (alt < dist[v]) {
-                            dist[v] = alt;
-                            prev[v] = u;
-                        }
+                for (let v in (edges[u] || {})) {
+                    if (accidentNodes.includes(u) || accidentNodes.includes(v)) continue;
+                    const alt = dist[u] + edges[u][v];
+                    if (alt < dist[v]) {
+                        dist[v] = alt;
+                        prev[v] = u;
                     }
                 }
             }
@@ -1125,11 +1419,14 @@
                 fScore[n] = Infinity;
             });
 
+            function heuristic(a, b) {
+                return Math.sqrt(
+                    Math.pow(nodes[a].x - nodes[b].x, 2) +
+                    Math.pow(nodes[a].y - nodes[b].y, 2)
+                ) / 100;
+            }
+
             gScore[start] = 0;
-            let heuristic = (a, b) => {
-                if (!nodes[a] || !nodes[b]) return 0;
-                return Math.sqrt(Math.pow(nodes[a].x - nodes[b].x, 2) + Math.pow(nodes[a].y - nodes[b].y, 2)) / 100;
-            };
             fScore[start] = heuristic(start, end);
 
             while (openSet.size > 0) {
@@ -1149,20 +1446,19 @@
 
                 openSet.delete(current);
 
-                if (edges[current]) {
-                    for (let neighbor in edges[current]) {
-                        if (accidentNodes.includes(current) || accidentNodes.includes(neighbor)) continue;
-                        let tentativeGScore = gScore[current] + edges[current][neighbor];
-                        if (tentativeGScore < gScore[neighbor]) {
-                            cameFrom[neighbor] = current;
-                            gScore[neighbor] = tentativeGScore;
-                            fScore[neighbor] = gScore[neighbor] + heuristic(neighbor, end);
-                            openSet.add(neighbor);
-                        }
+                for (let neighbor in (edges[current] || {})) {
+                    if (accidentNodes.includes(current) || accidentNodes.includes(neighbor)) continue;
+                    let tentative = gScore[current] + edges[current][neighbor];
+                    if (tentative < gScore[neighbor]) {
+                        cameFrom[neighbor] = current;
+                        gScore[neighbor] = tentative;
+                        fScore[neighbor] = tentative + heuristic(neighbor, end);
+                        openSet.add(neighbor);
                     }
                 }
             }
-            return [start, end];
+
+            return dijkstra(start, end);
         }
 
         function bellmanFord(start, end) {
@@ -1175,14 +1471,19 @@
             });
             dist[start] = 0;
 
+            const allEdges = [];
+            for (let u in edges) {
+                for (let v in edges[u]) {
+                    allEdges.push([u, v, edges[u][v]]);
+                }
+            }
+
             for (let i = 0; i < Object.keys(nodes).length - 1; i++) {
-                for (let u in edges) {
-                    for (let v in edges[u]) {
-                        if (accidentNodes.includes(u) || accidentNodes.includes(v)) continue;
-                        if (dist[u] !== Infinity && dist[u] + edges[u][v] < dist[v]) {
-                            dist[v] = dist[u] + edges[u][v];
-                            prev[v] = u;
-                        }
+                for (const [u, v, w] of allEdges) {
+                    if (accidentNodes.includes(u) || accidentNodes.includes(v)) continue;
+                    if (dist[u] !== Infinity && dist[u] + w < dist[v]) {
+                        dist[v] = dist[u] + w;
+                        prev[v] = u;
                     }
                 }
             }
@@ -1193,137 +1494,121 @@
                 path.unshift(curr);
                 curr = prev[curr];
             }
-            return path.length > 1 && path[0] === start ? path : [start, end];
+            return path.length > 1 && path[0] === start ? path : dijkstra(start, end);
         }
 
-        // ==================== WHAT-IF SIMULATION ====================
-        function injectAccident() {
-            let nodeKeys = Object.keys(nodes);
-            if (nodeKeys.length > 0) {
-                let randomNode = nodeKeys[Math.floor(Math.random() * nodeKeys.length)];
-                if (!accidentNodes.includes(randomNode)) {
-                    accidentNodes.push(randomNode);
-                    document.getElementById("whatIfResult").innerHTML = 
-                        `<div class="warning-box">⚠️ Accident injected at node <strong>${randomNode}</strong> - Route must avoid this intersection</div>`;
-                    drawGraph();
+        function runGA() {
+            const nodeKeys = Object.keys(nodes);
+            if (nodeKeys.length < 2) {
+                alert("Generate graph first!");
+                return;
+            }
+
+            const start = nodeKeys[0];
+            const end = nodeKeys[nodeKeys.length - 1];
+            const popSize = Number(document.getElementById("popSize").value);
+            const gens = Number(document.getElementById("generations").value);
+            let mutationRate = Number(document.getElementById("mutationRate").value);
+            let crossoverRate = Number(document.getElementById("crossoverRate").value);
+
+            document.getElementById("gaProgress").style.display = "block";
+            disableControls(true);
+            setStatusChip("Optimization Running", true);
+            addLog(`GA started with population <strong>${popSize}</strong>, generations <strong>${gens}</strong>.`, "GA");
+
+            const startTime = performance.now();
+
+            let population = Array(popSize).fill(0).map(() => ({
+                route: createRandomPath(start, end),
+                fitness: 0
+            }));
+
+            population.forEach(p => p.fitness = calculateMultiObjectiveFitness(p.route));
+
+            let fitnessHistory = [];
+            let mutationHistory = [];
+            let crossoverHistory = [];
+            let bestFitness = -Infinity;
+            let bestPath = dijkstra(start, end);
+            let gen = 0;
+
+            function evolve() {
+                if (gen >= gens) {
+                    const endTime = performance.now();
+                    displayResults(bestPath, endTime - startTime, fitnessHistory, mutationHistory, crossoverHistory);
+                    disableControls(false);
+                    setStatusChip("Optimization Complete", true);
+                    addLog(`Optimization complete. Best route found: <strong>${bestPath.join(" → ")}</strong>.`, "GA");
+                    return;
                 }
+
+                population.forEach(p => p.fitness = calculateMultiObjectiveFitness(p.route));
+                population.sort((a, b) => b.fitness - a.fitness);
+
+                const diversity = calculateDiversity(population);
+                const diversityThreshold = 0.05;
+
+                if (diversity < diversityThreshold && gen > 8) {
+                    mutationRate = Math.min(mutationRate + 0.03, 0.30);
+                    crossoverRate = Math.min(crossoverRate + 0.02, 0.95);
+                } else if (diversity > 0.5) {
+                    mutationRate = Math.max(mutationRate - 0.01, 0.05);
+                    crossoverRate = Math.max(crossoverRate - 0.01, 0.60);
+                }
+
+                mutationHistory.push(mutationRate);
+                crossoverHistory.push(crossoverRate);
+
+                if (population[0] && population[0].fitness > bestFitness) {
+                    bestFitness = population[0].fitness;
+                    bestPath = [...population[0].route];
+                }
+
+                fitnessHistory.push(bestFitness);
+
+                const eliteCount = Math.max(2, Math.floor(popSize * 0.2));
+                let newPopulation = population.slice(0, eliteCount).map(p => ({
+                    route: [...p.route],
+                    fitness: p.fitness
+                }));
+
+                while (newPopulation.length < popSize) {
+                    const p1 = population[Math.floor(Math.random() * Math.min(10, population.length))];
+                    const p2 = population[Math.floor(Math.random() * Math.min(10, population.length))];
+                    const childRoute = mutate(crossover(p1.route, p2.route, crossoverRate, start, end), mutationRate, start, end);
+                    newPopulation.push({ route: childRoute, fitness: 0 });
+                }
+
+                population = newPopulation;
+
+                document.getElementById("progressFill").style.width = ((gen + 1) / gens * 100) + "%";
+                document.getElementById("currentGen").textContent = gen + 1;
+                document.getElementById("totalGen").textContent = gens;
+                document.getElementById("currentMutationRate").textContent = mutationRate.toFixed(3);
+                document.getElementById("currentCrossoverRate").textContent = crossoverRate.toFixed(3);
+                document.getElementById("generationsCompleted").textContent = gen + 1;
+                document.getElementById("diversity").textContent = diversity.toFixed(3);
+
+                if ((gen + 1) % 20 === 0) {
+                    addLog(`Generation <strong>${gen + 1}</strong> processed. Current best fitness: <strong>${bestFitness.toFixed(3)}</strong>.`, "GA");
+                }
+
+                gen++;
+                setTimeout(evolve, 10);
             }
+
+            evolve();
         }
 
-        function increaseTraffic(percent) {
-            trafficMultiplier = 1 + (percent / 100);
-            document.getElementById("whatIfResult").innerHTML = 
-                `<div class="info-box">📈 Traffic increased by <strong>+${percent}%</strong> (Multiplier: <strong>${trafficMultiplier.toFixed(2)}x</strong>)</div>`;
-            updateHeatmap();
-            drawGraph();
-        }
-
-        function enableFuelSaving() {
-            fuelSavingMode = !fuelSavingMode;
-            document.getElementById("whatIfResult").innerHTML = 
-                `<div class="success-box">⛽ Fuel-Saving Mode: <strong>${fuelSavingMode ? 'ENABLED' : 'DISABLED'}</strong> (Fuel cost -15%)</div>`;
-        }
-
-        function resetSimulation() {
-            accidentNodes = [];
-            trafficMultiplier = 1.0;
-            fuelSavingMode = false;
-            document.getElementById("whatIfResult").innerHTML = '<div class="success-box">🔄 Simulation reset to default conditions</div>';
-            drawGraph();
-            updateHeatmap();
-        }
-
-        // ==================== CASE STUDIES ====================
-        function runCaseStudy(scenario) {
-            document.getElementById("runBtn").disabled = true;
-
-            if (scenario === 'peak') {
-                document.getElementById("weatherSelect").value = "1";
-                document.getElementById("peakSelect").value = "1.4";
-                trafficMultiplier = 1.4;
-                accidentNodes = [];
-                drawGraph();
-                updateHeatmap();
-
-                setTimeout(() => runGA(), 500);
-
-                setTimeout(() => {
-                    let nodeKeys = Object.keys(nodes);
-                    let dijPath = dijkstra(nodeKeys[0], nodeKeys[nodeKeys.length - 1]);
-                    
-                    let gaDistance = parseFloat(document.getElementById("totalDistance").textContent);
-                    let gaTime = parseFloat(document.getElementById("totalTime").textContent);
-                    let gafuel = parseFloat(document.getElementById("fuelCost").textContent);
-                    
-                    let dijDist = calculateDistance(dijPath);
-                    let dijTime = calculateTime(dijPath);
-                    let dijFuel = calculateFuel(dijPath);
-
-                    document.getElementById("case1GAdist").textContent = gaDistance.toFixed(2) + " km";
-                    document.getElementById("case1GAtime").textContent = gaTime.toFixed(1) + " min";
-                    document.getElementById("case1GAfuel").textContent = gafuel.toFixed(2);
-                    
-                    document.getElementById("case1DIJdist").textContent = dijDist.toFixed(2) + " km";
-                    document.getElementById("case1DIJtime").textContent = dijTime.toFixed(1) + " min";
-                    document.getElementById("case1DIJfuel").textContent = dijFuel.toFixed(2);
-                    
-                    let timeSaved = dijTime - gaTime;
-                    let distDiff = gaDistance - dijDist;
-                    
-                    document.getElementById("case1Savings").textContent = timeSaved > 0 ? timeSaved.toFixed(1) + " min" : "N/A";
-                    document.getElementById("case1Distance").textContent = distDiff > 0 ? "+" + distDiff.toFixed(2) : distDiff.toFixed(2);
-
-                    document.getElementById("runBtn").disabled = false;
-                }, 3000);
-
-            } else if (scenario === 'accident') {
-                document.getElementById("weatherSelect").value = "1.5";
-                document.getElementById("peakSelect").value = "1";
-                trafficMultiplier = 1.0;
-                let nodeKeys = Object.keys(nodes);
-                accidentNodes = [nodeKeys[Math.floor(nodeKeys.length / 2)]];
-                drawGraph();
-                updateHeatmap();
-
-                setTimeout(() => runGA(), 500);
-
-                setTimeout(() => {
-                    let dijPath = dijkstra(nodeKeys[0], nodeKeys[nodeKeys.length - 1]);
-                    
-                    let gaDistance = parseFloat(document.getElementById("totalDistance").textContent);
-                    let gaTime = parseFloat(document.getElementById("totalTime").textContent);
-                    let gaFuel = parseFloat(document.getElementById("fuelCost").textContent);
-                    
-                    let dijDist = calculateDistance(dijPath);
-                    let dijTime = calculateTime(dijPath);
-                    let dijFuel = calculateFuel(dijPath);
-
-                    document.getElementById("case2GAdist").textContent = gaDistance.toFixed(2) + " km";
-                    document.getElementById("case2GAtime").textContent = gaTime.toFixed(1) + " min";
-                    document.getElementById("case2GAfuel").textContent = gaFuel.toFixed(2);
-                    
-                    document.getElementById("case2DIJdist").textContent = dijDist.toFixed(2) + " km";
-                    document.getElementById("case2DIJtime").textContent = dijTime.toFixed(1) + " min";
-                    document.getElementById("case2DIJfuel").textContent = dijFuel.toFixed(2);
-                    
-                    document.getElementById("case2Feasibility").textContent = "✓ Route Found";
-                    document.getElementById("case2Avoidance").textContent = "✓ Avoided Node " + accidentNodes[0];
-
-                    document.getElementById("runBtn").disabled = false;
-                }, 3000);
-            }
-        }
-
-        // ==================== DISPLAY RESULTS ====================
         function displayResults(bestPath, compTime, fitnessHistory, mutationHistory, crossoverHistory) {
-            let nodeKeys = Object.keys(nodes);
-            let start = nodeKeys[0];
-            let end = nodeKeys[nodeKeys.length - 1];
+            const nodeKeys = Object.keys(nodes);
+            const start = nodeKeys[0];
+            const end = nodeKeys[nodeKeys.length - 1];
 
-            let distance = calculateDistance(bestPath);
-            let time = calculateTime(bestPath);
-            let fuel = calculateFuel(bestPath);
-            let fitness = calculateMultiObjectiveFitness(bestPath);
+            const distance = calculateDistance(bestPath);
+            const time = calculateTime(bestPath);
+            const fuel = calculateFuel(bestPath);
+            const fitness = calculateMultiObjectiveFitness(bestPath);
 
             document.getElementById("bestRoute").textContent = bestPath.join(" → ");
             document.getElementById("totalDistance").textContent = distance.toFixed(2);
@@ -1331,34 +1616,27 @@
             document.getElementById("fuelCost").textContent = fuel.toFixed(2);
             document.getElementById("fitnessScore").textContent = fitness.toFixed(3);
             document.getElementById("compTime").textContent = compTime.toFixed(2);
-            document.getElementById("diversity").textContent = calculateDiversity(
-                bestPath.map(n => ({ fitness: calculateMultiObjectiveFitness([start, n, end]) }))
-            ).toFixed(3);
-            document.getElementById("generationsCompleted").textContent = fitnessHistory.length;
-
-            // Run comparison algorithms
-            let startTime = performance.now();
-            let dijPath = dijkstra(start, end);
-            let dijCompTime = performance.now() - startTime;
-            let dijDist = calculateDistance(dijPath);
-            let dijTime = calculateTime(dijPath);
-
-            startTime = performance.now();
-            let astarPath = aStar(start, end);
-            let astarCompTime = performance.now() - startTime;
-            let astarDist = calculateDistance(astarPath);
-            let astarTime = calculateTime(astarPath);
-
-            startTime = performance.now();
-            let bellPath = bellmanFord(start, end);
-            let bellCompTime = performance.now() - startTime;
-            let bellDist = calculateDistance(bellPath);
-            let bellTime = calculateTime(bellPath);
-
-            // Update comparison cards
             document.getElementById("gaDistance").textContent = distance.toFixed(2) + " km";
             document.getElementById("gaTime").textContent = Math.round(time) + " min";
             document.getElementById("gaCompTime").textContent = compTime.toFixed(2) + " ms";
+
+            const dijStartTime = performance.now();
+            const dijPath = dijkstra(start, end);
+            const dijCompTime = performance.now() - dijStartTime;
+            const dijDist = calculateDistance(dijPath);
+            const dijTime = calculateTime(dijPath);
+
+            const astarStartTime = performance.now();
+            const astarPath = aStar(start, end);
+            const astarCompTime = performance.now() - astarStartTime;
+            const astarDist = calculateDistance(astarPath);
+            const astarTime = calculateTime(astarPath);
+
+            const bellStartTime = performance.now();
+            const bellPath = bellmanFord(start, end);
+            const bellCompTime = performance.now() - bellStartTime;
+            const bellDist = calculateDistance(bellPath);
+            const bellTime = calculateTime(bellPath);
 
             document.getElementById("dijDistance").textContent = dijDist.toFixed(2) + " km";
             document.getElementById("dijTime").textContent = Math.round(dijTime) + " min";
@@ -1372,16 +1650,53 @@
             document.getElementById("bellmanTime").textContent = Math.round(bellTime) + " min";
             document.getElementById("bellmanCompTime").textContent = bellCompTime.toFixed(2) + " ms";
 
-            // Update charts
-            updateCharts(fitnessHistory, distance, dijDist, astarDist, bellDist, time, dijTime, astarTime, bellTime, mutationHistory, crossoverHistory);
-            highlightPath(bestPath, "#8b5cf6");
+            updateCharts(
+                fitnessHistory,
+                distance, dijDist, astarDist, bellDist,
+                time, dijTime, astarTime, bellTime,
+                mutationHistory, crossoverHistory
+            );
+
+            highlightPath(bestPath);
             animateCar(bestPath);
+
+            let routeLabel = "Balanced";
+            const mode = document.getElementById("optMode").value;
+            if (mode === "time") routeLabel = "High-Speed";
+            if (mode === "distance") routeLabel = "Shortest";
+            if (mode === "fuel") routeLabel = "Fuel-Efficient";
+
+            document.getElementById("routeInsight").innerHTML = `
+                <strong>Route Strategy:</strong> ${routeLabel}<br>
+                <strong>Interpretation:</strong> The GA selected <strong>${bestPath.join(" → ")}</strong> as the best trade-off under current traffic, weather, and simulation constraints.<br>
+                <strong>Scenario Impact:</strong> ${accidentNodes.length > 0 ? `Avoided ${accidentNodes.length} accident-prone node(s).` : `No active accident zones.`}<br>
+                <strong>Traffic State:</strong> Multiplier currently at <strong>${trafficMultiplier.toFixed(2)}x</strong>.
+            `;
+
+            document.querySelectorAll(".comparison-card").forEach(card => card.classList.remove("highlight-winner"));
+
+            const results = [
+                { name: "GA", time, el: document.querySelector(".comparison-card.ga") },
+                { name: "Dijkstra", time: dijTime, el: document.querySelector(".comparison-card.dijkstra") },
+                { name: "A*", time: astarTime, el: document.querySelector(".comparison-card.astar") },
+                { name: "Bellman-Ford", time: bellTime, el: document.querySelector(".comparison-card.bellman") }
+            ];
+
+            const best = results.filter(r => isFinite(r.time)).sort((a, b) => a.time - b.time)[0];
+            if (best && best.el) {
+                best.el.classList.add("highlight-winner");
+                document.getElementById("summaryBestAlgo").textContent = best.name;
+                document.getElementById("comparisonConclusion").innerHTML =
+                    `<strong>Best current performer:</strong> ${best.name} achieved the lowest travel time in this scenario. GA remains more suitable when traffic, weather, and constraints change dynamically.`;
+            }
+
+            updateHeaderSummary();
         }
 
         function updateCharts(fitnessHistory, gaDistance, dijDistance, astarDistance, bellDistance, gaTime, dijTime, astarTime, bellTime, mutationHistory, crossoverHistory) {
-            let compCtx = document.getElementById("comparisonChart").getContext("2d");
-            let fitnessCtx = document.getElementById("fitnessChart").getContext("2d");
-            let adaptiveCtx = document.getElementById("adaptiveGAChart").getContext("2d");
+            const compCtx = document.getElementById("comparisonChart").getContext("2d");
+            const fitnessCtx = document.getElementById("fitnessChart").getContext("2d");
+            const adaptiveCtx = document.getElementById("adaptiveGAChart").getContext("2d");
 
             if (comparisonChart) comparisonChart.destroy();
             if (fitnessChart) fitnessChart.destroy();
@@ -1441,86 +1756,200 @@
                         {
                             label: "Mutation Rate",
                             data: mutationHistory,
-                            borderColor: "#ef4444",
-                            backgroundColor: "rgba(239, 68, 68, 0.05)",
-                            tension: 0.3,
-                            yAxisID: 'y'
+                            borderColor: "#60a5fa",
+                            backgroundColor: "rgba(96, 165, 250, 0.08)",
+                            tension: 0.3
                         },
                         {
                             label: "Crossover Rate",
                             data: crossoverHistory,
                             borderColor: "#10b981",
-                            backgroundColor: "rgba(16, 185, 129, 0.05)",
-                            tension: 0.3,
-                            yAxisID: 'y'
+                            backgroundColor: "rgba(16, 185, 129, 0.08)",
+                            tension: 0.3
                         }
                     ]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: "#e0e0e0" } } },
                     scales: {
-                        y: { min: 0, max: 1, ticks: { color: "#a0aec0" }, grid: { color: "rgba(255,255,255,0.1)" } },
+                        y: { ticks: { color: "#a0aec0" }, grid: { color: "rgba(255,255,255,0.1)" } },
                         x: { ticks: { color: "#a0aec0" }, grid: { color: "rgba(255,255,255,0.1)" } }
                     }
                 }
             });
         }
 
-        function animateCar(path) {
-            if (path.length < 2) return;
-            
-            let carCanvas = document.createElement("canvas");
-            carCanvas.width = canvas.width;
-            carCanvas.height = canvas.height;
-            carCanvas.style.cssText = "position: absolute; pointer-events: none; border-radius: 8px;";
-            
-            let carCtx = carCanvas.getContext("2d");
-            canvas.parentElement.style.position = "relative";
-            canvas.parentElement.appendChild(carCanvas);
+        function injectAccident() {
+            const nodeKeys = Object.keys(nodes);
+            if (nodeKeys.length === 0) return;
 
-            let i = 0;
-            function move() {
-                if (i >= path.length - 1) {
-                    setTimeout(() => carCanvas.remove(), 500);
-                    return;
-                }
-
-                let A = nodes[path[i]];
-                let B = nodes[path[i + 1]];
-                let steps = 50, t = 0;
-
-                let interval = setInterval(() => {
-                    carCtx.clearRect(0, 0, carCanvas.width, carCanvas.height);
-
-                    let x = A.x + (B.x - A.x) * (t / steps);
-                    let y = A.y + (B.y - A.y) * (t / steps);
-                    let angle = Math.atan2(B.y - A.y, B.x - A.x);
-
-                    carCtx.save();
-                    carCtx.translate(x, y);
-                    carCtx.rotate(angle);
-                    carCtx.fillStyle = "#ff4d4d";
-                    carCtx.fillRect(-10, -6, 20, 12);
-                    carCtx.fillStyle = "#fff";
-                    carCtx.fillRect(-6, -4, 4, 4);
-                    carCtx.fillRect(2, -4, 4, 4);
-                    carCtx.restore();
-
-                    t++;
-                    if (t > steps) {
-                        clearInterval(interval);
-                        i++;
-                        move();
-                    }
-                }, 20);
+            const randomNode = nodeKeys[Math.floor(Math.random() * nodeKeys.length)];
+            if (!accidentNodes.includes(randomNode)) {
+                accidentNodes.push(randomNode);
+                document.getElementById("whatIfResult").innerHTML =
+                    `<div class="warning-box">Accident injected at node <strong>${randomNode}</strong> - route must avoid this intersection.</div>`;
+                drawGraph();
+                updateHeaderSummary();
+                setStatusChip("Accident Scenario Active", false);
+                addLog(`Accident injected at node <strong>${randomNode}</strong>. Route recalculation required.`, "Scenario");
             }
-            move();
         }
 
-        // Initialize on load
-        generateGraph();
+        function increaseTraffic(percent) {
+            trafficMultiplier = 1 + (percent / 100);
+            document.getElementById("whatIfResult").innerHTML =
+                `<div class="info-box">Traffic increased by <strong>+${percent}%</strong> (Multiplier: <strong>${trafficMultiplier.toFixed(2)}x</strong>)</div>`;
+            updateHeatmap();
+            drawGraph();
+            updateHeaderSummary();
+            setStatusChip(`Traffic +${percent}% Applied`, true);
+            addLog(`Traffic multiplier changed to <strong>${trafficMultiplier.toFixed(2)}x</strong>.`, "Scenario");
+        }
+
+        function enableFuelSaving() {
+            fuelSavingMode = !fuelSavingMode;
+            document.getElementById("whatIfResult").innerHTML =
+                `<div class="success-box">Fuel-Saving Mode: <strong>${fuelSavingMode ? "ENABLED" : "DISABLED"}</strong> (Fuel cost -15%)</div>`;
+            addLog(`Fuel saving mode <strong>${fuelSavingMode ? "enabled" : "disabled"}</strong>.`, "Scenario");
+        }
+
+        function resetSimulation() {
+            accidentNodes = [];
+            trafficMultiplier = 1.0;
+            fuelSavingMode = false;
+            document.getElementById("whatIfResult").innerHTML = '<div class="success-box">Simulation reset to default conditions.</div>';
+            drawGraph();
+            updateHeatmap();
+            updateHeaderSummary();
+            setStatusChip("System Reset", true);
+            addLog(`Simulation reset to default conditions.`, "System");
+        }
+
+        function runCaseStudy(scenario) {
+            if (Object.keys(nodes).length === 0) {
+                alert("Generate graph first!");
+                return;
+            }
+
+            if (scenario === "peak") {
+                document.getElementById("weatherSelect").value = "1";
+                document.getElementById("peakSelect").value = "1.4";
+                trafficMultiplier = 1.4;
+                accidentNodes = [];
+                updateHeaderSummary();
+                drawGraph();
+                updateHeatmap();
+                addLog(`Peak hour case study activated.`, "Case Study");
+
+                runGA();
+
+                setTimeout(() => {
+                    const nodeKeys = Object.keys(nodes);
+                    const dijPath = dijkstra(nodeKeys[0], nodeKeys[nodeKeys.length - 1]);
+
+                    const gaDistance = parseFloat(document.getElementById("totalDistance").textContent);
+                    const gaTime = parseFloat(document.getElementById("totalTime").textContent);
+                    const gaFuel = parseFloat(document.getElementById("fuelCost").textContent);
+
+                    const dijDist = calculateDistance(dijPath);
+                    const dijTime = calculateTime(dijPath);
+                    const dijFuel = calculateFuel(dijPath);
+
+                    document.getElementById("case1GAdist").textContent = gaDistance.toFixed(2) + " km";
+                    document.getElementById("case1GAtime").textContent = gaTime.toFixed(1) + " min";
+                    document.getElementById("case1GAfuel").textContent = gaFuel.toFixed(2);
+
+                    document.getElementById("case1DIJdist").textContent = dijDist.toFixed(2) + " km";
+                    document.getElementById("case1DIJtime").textContent = dijTime.toFixed(1) + " min";
+                    document.getElementById("case1DIJfuel").textContent = dijFuel.toFixed(2);
+
+                    const timeSaved = dijTime - gaTime;
+                    const distDiff = gaDistance - dijDist;
+
+                    document.getElementById("case1Savings").textContent = timeSaved > 0 ? timeSaved.toFixed(1) + " min" : "N/A";
+                    document.getElementById("case1Distance").textContent = distDiff > 0 ? "+" + distDiff.toFixed(2) + " km" : distDiff.toFixed(2) + " km";
+                }, 2300);
+
+            } else if (scenario === "accident") {
+                document.getElementById("weatherSelect").value = "1.5";
+                document.getElementById("peakSelect").value = "1";
+                trafficMultiplier = 1.0;
+
+                const nodeKeys = Object.keys(nodes);
+                accidentNodes = [nodeKeys[Math.floor(nodeKeys.length / 2)]];
+                updateHeaderSummary();
+                drawGraph();
+                updateHeatmap();
+                addLog(`Rain + accident case study activated.`, "Case Study");
+
+                runGA();
+
+                setTimeout(() => {
+                    const dijPath = dijkstra(nodeKeys[0], nodeKeys[nodeKeys.length - 1]);
+
+                    const gaDistance = parseFloat(document.getElementById("totalDistance").textContent);
+                    const gaTime = parseFloat(document.getElementById("totalTime").textContent);
+                    const gaFuel = parseFloat(document.getElementById("fuelCost").textContent);
+
+                    const dijDist = calculateDistance(dijPath);
+                    const dijTime = calculateTime(dijPath);
+                    const dijFuel = calculateFuel(dijPath);
+
+                    document.getElementById("case2GAdist").textContent = gaDistance.toFixed(2) + " km";
+                    document.getElementById("case2GAtime").textContent = gaTime.toFixed(1) + " min";
+                    document.getElementById("case2GAfuel").textContent = gaFuel.toFixed(2);
+
+                    document.getElementById("case2DIJdist").textContent = dijDist.toFixed(2) + " km";
+                    document.getElementById("case2DIJtime").textContent = dijTime.toFixed(1) + " min";
+                    document.getElementById("case2DIJfuel").textContent = dijFuel.toFixed(2);
+
+                    document.getElementById("case2Feasibility").textContent = "✓ Route Found";
+                    document.getElementById("case2Avoidance").textContent = "✓ Avoided Node " + accidentNodes[0];
+                }, 2300);
+            }
+        }
+
+        canvas.addEventListener("mousemove", function (e) {
+            const tooltip = document.getElementById("graphTooltip");
+            if (!tooltip || Object.keys(nodes).length === 0) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            let found = null;
+            for (let n in nodes) {
+                const dx = mouseX - nodes[n].x;
+                const dy = mouseY - nodes[n].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 12) {
+                    found = n;
+                    break;
+                }
+            }
+
+            if (found) {
+                tooltip.style.display = "block";
+                tooltip.style.left = `${mouseX + 12}px`;
+                tooltip.style.top = `${mouseY + 12}px`;
+                tooltip.innerHTML = `
+                    <strong>Node ${found}</strong><br>
+                    Congestion: ${nodes[found].congestion.toFixed(2)}x<br>
+                    ${accidentNodes.includes(found) ? "Status: Accident Zone" : "Status: Normal"}
+                `;
+            } else {
+                tooltip.style.display = "none";
+            }
+        });
+
+        canvas.addEventListener("mouseleave", function () {
+            const tooltip = document.getElementById("graphTooltip");
+            if (tooltip) tooltip.style.display = "none";
+        });
+
+        updateHeaderSummary();
     </script>
 </body>
 </html>
