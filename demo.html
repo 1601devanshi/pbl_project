@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1053,6 +1051,8 @@ let latestFitnessHistory = [];
 let latestMutationHistory = [];
 let latestCrossoverHistory = [];
 let latestComparison = null;
+let pendingComparisonData = null;
+let pendingFitnessData = null;
 
 function showTab(tabId, btn) {
     document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
@@ -1065,9 +1065,16 @@ function showTab(tabId, btn) {
             drawGraph(lastBestPath);
             updateHeatmap();
         }
-        if (comparisonChart) comparisonChart.resize();
-        if (fitnessChart) fitnessChart.resize();
+
+        if (tabId === "comparisonTab") {
+            renderComparisonCharts();
+        } else {
+            if (comparisonChart) comparisonChart.resize();
+            if (fitnessChart) fitnessChart.resize();
+        }
+
         if (adaptiveGAChart) adaptiveGAChart.resize();
+
         if (tabId === "droneTab") {
             buildDroneCharts();
             drawDroneBaseMap(false, 0, Number(document.getElementById("droneBattery")?.value || 78));
@@ -1977,75 +1984,124 @@ function updateAdaptiveChart(fitnessHistory, mutationHistory, crossoverHistory) 
 }
 
 function updateComparisonCharts(fitnessHistory, gaDistance, dijDistance, astarDistance, bellDistance, gaTime, dijTime, astarTime, bellTime, gaComp, dijComp, astarComp, bellComp) {
-    const compCtx = document.getElementById("comparisonChart").getContext("2d");
-    const fitCtx = document.getElementById("fitnessChart").getContext("2d");
+    pendingComparisonData = {
+        gaDistance, dijDistance, astarDistance, bellDistance,
+        gaTime, dijTime, astarTime, bellTime,
+        gaComp, dijComp, astarComp, bellComp
+    };
 
-    if (comparisonChart) comparisonChart.destroy();
-    if (fitnessChart) fitnessChart.destroy();
+    pendingFitnessData = [...fitnessHistory];
 
-    const bestDistance = Math.min(gaDistance, dijDistance, astarDistance, bellDistance);
-    const bestTime = Math.min(gaTime, dijTime, astarTime, bellTime);
-    const bestComp = Math.max(0.01, Math.min(gaComp, dijComp, astarComp, bellComp));
-    const efficiency = (best, value) => Number(((best / Math.max(value, 0.0001)) * 100).toFixed(1));
+    const comparisonTab = document.getElementById("comparisonTab");
+    const isVisible = comparisonTab && comparisonTab.classList.contains("active");
 
-    comparisonChart = new Chart(compCtx, {
-        type: 'bar',
+    if (!isVisible) return;
+
+    renderComparisonCharts();
+}
+
+function renderComparisonCharts() {
+    if (!pendingComparisonData || !pendingFitnessData) return;
+
+    const {
+        gaDistance, dijDistance, astarDistance, bellDistance,
+        gaTime, dijTime, astarTime, bellTime,
+        gaComp, dijComp, astarComp, bellComp
+    } = pendingComparisonData;
+
+    const comparisonCanvas = document.getElementById("comparisonChart");
+    const fitnessCanvas = document.getElementById("fitnessChart");
+
+    if (!comparisonCanvas || !fitnessCanvas) return;
+
+    const comparisonCtx = comparisonCanvas.getContext("2d");
+    const fitnessCtx = fitnessCanvas.getContext("2d");
+
+    if (comparisonChart) {
+        comparisonChart.destroy();
+        comparisonChart = null;
+    }
+
+    if (fitnessChart) {
+        fitnessChart.destroy();
+        fitnessChart = null;
+    }
+
+    comparisonChart = new Chart(comparisonCtx, {
+        type: "bar",
         data: {
-            labels: ['GA', 'Dijkstra', 'A*', 'Bellman-Ford'],
+            labels: ["GA", "Dijkstra", "A*", "Bellman-Ford"],
             datasets: [
-                { label: 'Distance Efficiency %', data: [efficiency(bestDistance, gaDistance), efficiency(bestDistance, dijDistance), efficiency(bestDistance, astarDistance), efficiency(bestDistance, bellDistance)], backgroundColor: 'rgba(139,92,246,0.82)' },
-                { label: 'Time Efficiency %', data: [efficiency(bestTime, gaTime), efficiency(bestTime, dijTime), efficiency(bestTime, astarTime), efficiency(bestTime, bellTime)], backgroundColor: 'rgba(59,130,246,0.82)' },
-                { label: 'Computation Efficiency %', data: [efficiency(bestComp, gaComp), efficiency(bestComp, dijComp), efficiency(bestComp, astarComp), efficiency(bestComp, bellComp)], backgroundColor: 'rgba(16,185,129,0.82)' }
+                {
+                    label: "Distance (km)",
+                    data: [gaDistance, dijDistance, astarDistance, bellDistance],
+                    backgroundColor: "rgba(96, 165, 250, 0.7)"
+                },
+                {
+                    label: "Time (min)",
+                    data: [gaTime, dijTime, astarTime, bellTime],
+                    backgroundColor: "rgba(168, 85, 247, 0.7)"
+                },
+                {
+                    label: "Computation (ms)",
+                    data: [gaComp, dijComp, astarComp, bellComp],
+                    backgroundColor: "rgba(34, 197, 94, 0.7)"
+                }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: '#e5e7eb' } },
-                tooltip: {
-                    callbacks: {
-                        afterBody: function(items) {
-                            const i = items[0].dataIndex;
-                            const raw = [
-                                `Distance: ${gaDistance.toFixed(2)} km | Time: ${gaTime.toFixed(1)} min | Comp: ${gaComp.toFixed(2)} ms`,
-                                `Distance: ${dijDistance.toFixed(2)} km | Time: ${dijTime.toFixed(1)} min | Comp: ${dijComp.toFixed(2)} ms`,
-                                `Distance: ${astarDistance.toFixed(2)} km | Time: ${astarTime.toFixed(1)} min | Comp: ${astarComp.toFixed(2)} ms`,
-                                `Distance: ${bellDistance.toFixed(2)} km | Time: ${bellTime.toFixed(1)} min | Comp: ${bellComp.toFixed(2)} ms`
-                            ];
-                            return raw[i];
-                        }
-                    }
+                legend: {
+                    labels: { color: "#e5e7eb" }
                 }
             },
             scales: {
-                x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } },
-                y: { beginAtZero: true, max: 110, ticks: { color: '#cbd5e1', callback: (v) => v + '%' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                x: {
+                    ticks: { color: "#cbd5e1" },
+                    grid: { color: "rgba(255,255,255,0.06)" }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: "#cbd5e1" },
+                    grid: { color: "rgba(255,255,255,0.06)" }
+                }
             }
         }
     });
 
-    fitnessChart = new Chart(fitCtx, {
-        type: 'line',
+    fitnessChart = new Chart(fitnessCtx, {
+        type: "line",
         data: {
-            labels: fitnessHistory.map((_, i) => i + 1),
+            labels: pendingFitnessData.map((_, i) => `Gen ${i + 1}`),
             datasets: [{
-                label: 'Best Fitness (GA)',
-                data: fitnessHistory,
+                label: "GA Fitness Evolution",
+                data: pendingFitnessData,
+                borderColor: "#8b5cf6",
+                backgroundColor: "rgba(139, 92, 246, 0.18)",
                 tension: 0.3,
-                borderColor: '#a855f7',
-                backgroundColor: 'rgba(168,85,247,0.16)',
-                pointRadius: 2,
-                fill: true
+                fill: true,
+                pointRadius: 2
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#e5e7eb' } } },
+            plugins: {
+                legend: {
+                    labels: { color: "#e5e7eb" }
+                }
+            },
             scales: {
-                x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } },
-                y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                x: {
+                    ticks: { color: "#cbd5e1" },
+                    grid: { color: "rgba(255,255,255,0.06)" }
+                },
+                y: {
+                    ticks: { color: "#cbd5e1" },
+                    grid: { color: "rgba(255,255,255,0.06)" }
+                }
             }
         }
     });
